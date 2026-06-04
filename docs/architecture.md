@@ -52,8 +52,12 @@ Implemented so far:
 - Local shadcn/ui-style primitives for buttons, badges, and cards.
 - Typed placeholder domain models in `src/types/home.ts`.
 - Dashboard status metadata for Good, Due Soon, Needs Attention, and Missing Info.
+- Guided asset/system checklist for properties with no assets.
+- Data-backed asset/system cards for created inventory records.
+- Reopenable inventory checklist with existing asset detection.
+- Inline asset detail forms backed by server actions.
 
-Dashboard property context is backed by Supabase. Asset/system cards are still static placeholders until the guided inventory flow is implemented.
+Dashboard property context and asset/system cards are backed by Supabase.
 
 ## Backend
 
@@ -86,8 +90,13 @@ Implemented:
 - Placeholder generated-style types in `src/types/database.ts`.
 - First-property setup server action in `src/app/dashboard/actions.ts`.
 - Dashboard query for the signed-in user's first property.
+- Guided asset checklist write action in `src/app/dashboard/actions.ts`.
+- Asset detail update action in `src/app/dashboard/actions.ts`.
+- Dashboard query for the active property's asset systems.
 - `npm run verify:supabase` confirms the initial tables are reachable.
 - A test Supabase user/property write path has been verified through RLS.
+- A test asset-system write path has been verified through RLS.
+- A test asset-system detail update path has been verified through RLS.
 
 ## Data Storage
 

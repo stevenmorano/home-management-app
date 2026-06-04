@@ -274,3 +274,6 @@ export type Database = {
 export type PropertyRow = Database["public"]["Tables"]["properties"]["Row"];
 export type PropertyInsert = Database["public"]["Tables"]["properties"]["Insert"];
 export type PropertyType = Database["public"]["Enums"]["property_type"];
+export type AssetSystemRow = Database["public"]["Tables"]["asset_systems"]["Row"];
+export type AssetSystemInsert = Database["public"]["Tables"]["asset_systems"]["Insert"];
+export type AssetSystemCategory = Database["public"]["Enums"]["asset_system_category"];

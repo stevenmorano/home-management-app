@@ -19,12 +19,24 @@ Project scaffold and authentication foundation are complete for the first protec
 - `.env.local` placeholder and Supabase schema verification script are in place.
 - Supabase project URL/key are configured locally.
 - Initial migration has been applied in Supabase.
+- Duplicate-prevention migration has been applied in Supabase.
 - `npm run verify:supabase` passes against the real project.
 - A test user and property were created successfully through the RLS-protected write path.
+- Guided asset/system checklist is implemented for properties with no assets.
+- Selected checklist items create RLS-protected `asset_systems` rows with Missing Info defaults.
+- Dashboard asset cards now read from Supabase `asset_systems`.
+- A test user/property/assets write path was created successfully through RLS.
+- Duplicate checklist submissions are guarded in app code, collapsed in the dashboard, and covered by the applied database uniqueness migration.
+- The database unique index has been verified by attempting a duplicate insert and receiving constraint error `23505`.
+- Add more systems reopens the guided checklist after assets exist.
+- Already-added checklist items are disabled and labeled.
+- Inline asset detail editing is implemented for install year, estimated age, condition, last service date, and notes.
+- Asset detail updates are ownership-checked through the parent property.
+- Asset detail update flow has been verified against Supabase with a temporary test user/property/asset.
 - `npm run lint` and `npm run build` pass.
 - Local app verification confirms `/login` renders without the setup warning and unauthenticated `/dashboard` redirects to `/login`.
 
-The next implementation milestone is the guided asset/system checklist and replacing static asset cards with Supabase-backed asset records.
+The next implementation milestone is richer asset CRUD and dashboard status calculation, including custom assets, due dates, maintenance intervals, and replacement planning.
 
 ## Build Order
 
@@ -33,10 +45,10 @@ The next implementation milestone is the guided asset/system checklist and repla
 3. Database schema. Initial profiles/properties/rooms/asset systems migration complete.
 4. Property creation and switching. First-property creation complete; multi-property switching pending.
 5. Property type onboarding.
-6. Guided asset/system checklist.
-7. Asset/system CRUD.
-8. Dashboard status calculation.
-9. Home health dashboard UI.
+6. Guided asset/system checklist. Complete for initial creation.
+7. Asset/system CRUD. Create from checklist and basic detail editing complete; custom assets/delete/full edit pending.
+8. Dashboard status calculation. Basic status counts and simple detail-based status updates complete; richer due/attention logic pending.
+9. Home health dashboard UI. Data-backed shell complete; polish and detail flows pending.
 10. Work records.
 11. Contractors.
 12. Reminders.

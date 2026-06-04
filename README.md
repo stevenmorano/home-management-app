@@ -15,7 +15,10 @@ Current app surfaces:
 - `/dashboard`: protected property dashboard.
 - First-property setup for authenticated users with no properties.
 - Data-backed dashboard property header after a property is created.
-- Static placeholder asset/system cards, pending the guided inventory flow.
+- Guided asset/system checklist for properties with no assets.
+- Data-backed asset/system dashboard cards after checklist creation.
+- Reopenable “Add more systems” checklist with already-added items disabled.
+- Inline asset detail editing for age, condition, service date, and notes.
 
 The first target is a family-and-friends pilot for homeowners who currently track little or nothing about their home maintenance.
 

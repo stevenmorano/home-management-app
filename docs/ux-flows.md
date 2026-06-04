@@ -25,9 +25,9 @@
 4. User enters basic home details.
 5. App shows a guided checklist of common systems/assets for that property type.
 6. User selects what they have.
-7. User optionally enters structured details.
-8. App creates starter asset/system records.
-9. User lands on the property dashboard.
+7. App creates starter asset/system records with Missing Info defaults.
+8. User lands on the property dashboard with data-backed asset cards.
+9. User optionally enters structured details later.
 
 ## Asset Setup Flow
 
@@ -50,6 +50,17 @@ Preferred structured details:
 
 Unknown details should be stored as missing info and surfaced later.
 
+Current implementation:
+
+- Properties with no assets show a guided checklist based on `property_type`.
+- Users can reopen the checklist from the dashboard with Add more systems.
+- Already-added checklist items are disabled and marked Already added.
+- Selected checklist items create `asset_systems` rows.
+- New checklist assets default to `status = missing_info`, `condition = unknown`, `estimated_age_range = unknown`, and `ownership_responsibility = owner`.
+- Dashboard asset cards read from Supabase.
+- Dashboard asset cards include a lightweight details form for install year, estimated age, condition, last service date, and notes.
+- The Add more systems path keeps inventory setup open-ended instead of treating the first checklist submission as final.
+
 ## Dashboard Flow
 
 When a user opens a property, they should see:
@@ -63,6 +74,12 @@ When a user opens a property, they should see:
 - Recent work history.
 
 The dashboard should make the next best action obvious without overwhelming the user.
+
+Current implementation:
+
+- Status counts are calculated from saved asset/system rows.
+- Asset records with unknown or incomplete details remain Missing Info.
+- Saving useful details moves an asset out of Missing Info unless condition is Poor, which marks it Needs Attention.
 
 ## Work History Flow
 
@@ -100,4 +117,3 @@ Calendar-worthy examples:
 - Property switcher is visible from the dashboard.
 - Adding a second property should not disrupt the first property.
 - Global views can come later. MVP can focus on per-property dashboards.
-

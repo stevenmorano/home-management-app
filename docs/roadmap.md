@@ -17,22 +17,22 @@
 - Set up auth. Foundation complete.
 - Set up database. Initial migration applied and verified against Supabase.
 - Create property model. Initial table and first-property flow complete.
-- Create asset/system model. Initial table complete; UI/data flow pending.
-- Build first dashboard shell. Protected shell complete with data-backed property context; asset cards remain static placeholders.
+- Create asset/system model. Initial table and guided checklist creation flow complete.
+- Build first dashboard shell. Protected shell complete with data-backed property and asset context.
 
 ## Phase 2: Guided Inventory MVP
 
 - Property type onboarding. Started through first-property setup.
-- Guided asset checklist by property type.
-- Structured asset entry.
-- Missing info status.
-- Multi-property switcher.
+- Guided asset checklist by property type. Initial version complete.
+- Structured asset entry. Minimum useful asset creation and basic detail editing complete.
+- Missing info status. Default Missing Info creation complete.
+- Multi-property switcher. Pending.
 
 ## Phase 3: Home Health Dashboard
 
-- Status groups: Good, Due Soon, Needs Attention, Missing Info.
-- Asset tiles.
-- Upcoming maintenance.
+- Status groups: Good, Due Soon, Needs Attention, Missing Info. Basic counts implemented.
+- Asset tiles. Data-backed cards with basic inline editing implemented.
+- Upcoming maintenance. Placeholder only.
 - Overdue items.
 - Recently completed work.
 - Premium tablet-friendly layout.

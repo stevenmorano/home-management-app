@@ -65,7 +65,9 @@ async function main() {
 
   console.log("Supabase foundation reachable.");
   console.log(`Verified tables: ${verifiedTables.join(", ")}`);
-  console.log("Auth and first-property flow has been verified separately with a test user.");
+  console.log(
+    "Auth, first-property, asset creation, and asset detail update flows have been verified separately with test users."
+  );
 }
 
 main().catch((error) => {

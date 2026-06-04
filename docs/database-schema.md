@@ -6,7 +6,15 @@ The initial Supabase schema is defined in:
 supabase/migrations/202606040001_initial_home_schema.sql
 ```
 
-This migration has been applied to the current Supabase project and verified with `npm run verify:supabase`.
+The initial schema migration and duplicate-prevention migration have been applied to the current Supabase project and verified with `npm run verify:supabase`.
+
+Follow-up migrations:
+
+```text
+supabase/migrations/202606040002_dedupe_asset_systems.sql
+```
+
+The follow-up migration removes duplicate asset/system rows per property and adds a unique index on property, category, and normalized name.
 
 After applying the migration and filling `.env.local`, run:
 
@@ -21,6 +29,10 @@ Current verification status:
 - `rooms` reachable.
 - `asset_systems` reachable.
 - Test property creation through RLS succeeded.
+- Test asset-system creation through RLS succeeded.
+- Test asset-system detail update through RLS succeeded.
+- Duplicate asset/system creation is prevented in app code and should also be enforced by the follow-up unique index migration.
+- Duplicate asset/system insertion was tested and blocked by constraint error `23505`.
 
 ## Implemented Tables
 
@@ -108,7 +120,14 @@ Key columns:
 - `created_at`
 - `updated_at`
 
-Asset dashboard cards are still static placeholders until the next data-backed inventory step.
+Asset dashboard cards now read from `asset_systems`. The current UI creates starter records from the guided checklist and uses Missing Info defaults for incomplete details.
+The dashboard can update basic detail fields directly on `asset_systems`: `install_year`, `estimated_age_range`, `condition`, `last_service_date`, `notes`, and `status`.
+
+Duplicate guard:
+
+- App-side creation checks existing property assets before insert.
+- Dashboard cards collapse duplicate rows defensively and show a small duplicate-hidden badge.
+- Database-level uniqueness is enforced by `asset_systems_property_category_name_unique_idx` after the follow-up migration is applied.
 
 ## Enums
 

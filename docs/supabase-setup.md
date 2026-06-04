@@ -7,9 +7,10 @@ Use this guide to connect the local app to a Supabase project and verify the cur
 The local project is currently connected to Supabase:
 
 - `.env.local` contains the Supabase project URL and publishable anon key.
-- The initial migration has been applied.
+- The initial schema migration and duplicate-prevention migration have been applied.
 - `npm run verify:supabase` passes.
 - A test user and test property were created successfully through the authenticated/RLS write path.
+- Test asset creation, duplicate prevention, and asset detail updates have been verified through authenticated/RLS write paths.
 
 ## 1. Create `.env.local`
 
@@ -34,10 +35,11 @@ Do not add service-role keys to the frontend app.
 
 ## 2. Apply Initial Migration
 
-Apply this SQL file to the Supabase project:
+Apply migration SQL files to the Supabase project in order:
 
 ```text
 supabase/migrations/202606040001_initial_home_schema.sql
+supabase/migrations/202606040002_dedupe_asset_systems.sql
 ```
 
 Current options:
@@ -65,7 +67,7 @@ This checks:
 
 Because RLS is enabled, this script only verifies schema reachability with the anon key. It does not bypass user privacy.
 
-## 4. Verify Auth And First Property
+## 4. Verify Auth, First Property, And Inventory
 
 Run the app:
 
@@ -81,8 +83,11 @@ Then verify:
 4. Confirm a signed-in user with no properties sees the first-property setup form.
 5. Create a property.
 6. Confirm the dashboard shows that property in the header.
-7. Sign out.
-8. Confirm `/dashboard` redirects back to `/login`.
+7. Add checklist assets.
+8. Confirm Add more systems reopens the checklist and existing items are marked Already added.
+9. Save basic asset details.
+10. Sign out.
+11. Confirm `/dashboard` redirects back to `/login`.
 
 Current verified test account:
 
@@ -95,6 +100,13 @@ Current verified test property:
 ```text
 Test Property 1780544589781
 Testville, NY
+```
+
+Current verified asset edit test:
+
+```text
+home-management-edit-test-1780545793132@gmail.com
+Edit Flow Test 1780545793132
 ```
 
 ## Troubleshooting

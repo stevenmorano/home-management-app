@@ -28,6 +28,10 @@ Current starter app surface:
 - Protected property health dashboard shell at `/dashboard`
 - Email/password auth page at `/login`
 - First-property setup form for authenticated users with no properties
+- Guided asset/system checklist for authenticated users with a property but no assets
+- Reopenable Add more systems checklist for properties that already have assets
+- Data-backed asset/system cards after assets are created
+- Inline asset detail editing for install year, estimated age, condition, last service date, and notes
 - Property header and switcher placeholder
 - Status summary groups: Good, Due Soon, Needs Attention, Missing Info
 - Asset/system cards with structured status metadata
@@ -37,9 +41,12 @@ Current starter app surface:
 Current verified Supabase state:
 
 - `.env.local` contains the project URL and publishable anon key.
-- The initial migration has been applied in Supabase.
+- The initial schema migration and duplicate-prevention migration have been applied in Supabase.
 - `npm run verify:supabase` passes.
 - A test auth user and first property were created successfully through the anon key and RLS.
+- A test property asset inventory was created successfully through the anon key and RLS.
+- A test asset detail update was created successfully through the anon key and RLS.
+- Duplicate asset insertion is blocked by the database unique index.
 
 ## Local Setup
 
@@ -81,6 +88,12 @@ supabase/migrations/202606040001_initial_home_schema.sql
 
 Apply it to Supabase before creating real properties.
 
+Follow-up migrations should also be applied in order:
+
+```text
+supabase/migrations/202606040002_dedupe_asset_systems.sql
+```
+
 Planned Google Calendar OAuth values:
 
 - `GOOGLE_CLIENT_ID`
@@ -112,6 +125,9 @@ With Supabase configured and the migration applied, verify:
 - A signed-in user with no property sees the first-property setup form.
 - Creating a property redirects back to `/dashboard`.
 - `/dashboard` shows the created property name and location metadata.
+- Re-selecting an existing checklist asset should not create another visible card.
+- Add more systems reopens the checklist and marks existing items as Already added.
+- Saving asset details updates status and keeps ownership scoped to the signed-in user.
 
 Current test account created during verification:
 
@@ -124,6 +140,34 @@ Current test property:
 ```text
 Test Property 1780544589781
 Testville, NY
+```
+
+Current asset checklist test account:
+
+```text
+home-management-assets-test-1780545480211@gmail.com
+```
+
+Current asset checklist test property:
+
+```text
+Asset Checklist Test 1780545480211
+```
+
+Current asset checklist test assets:
+
+```text
+HVAC
+Roof
+Water heater
+```
+
+Current asset edit test:
+
+```text
+home-management-edit-test-1780545793132@gmail.com
+Edit Flow Test 1780545793132
+HVAC updated with install year 2020, condition good, and last service date 2026-06-04
 ```
 
 ## Dependency Notes

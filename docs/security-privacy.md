@@ -30,6 +30,9 @@ The app may store sensitive homeowner data, including:
 - Middleware refreshes Supabase auth cookies for server-rendered routes.
 - Initial RLS policies are included for profiles, properties, rooms, and asset systems.
 - Initial RLS-protected property creation has been verified with a test user.
+- Initial RLS-protected asset-system creation has been verified with a test user.
+- Initial RLS-protected asset-system detail updates have been verified with a test user.
+- Duplicate asset rows are prevented by ownership-scoped application checks and a property-scoped unique index migration.
 - No storage buckets, uploads, or Google OAuth token handling have been implemented yet.
 
 ## Row-Level Security Preparation
