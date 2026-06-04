@@ -6,8 +6,16 @@ The product is designed as a **Property Health Command Center**: users can open 
 
 ## Current Stage
 
-This project now has a normalized Next.js scaffold for the first web prototype.
-The current screen is a static dashboard shell based on the docs in `/docs`.
+This project has a protected Next.js web prototype with Supabase connected.
+Authentication, the initial RLS-backed schema, and the first-property flow have been verified against the Supabase project.
+
+Current app surfaces:
+
+- `/login`: email/password sign in and sign up.
+- `/dashboard`: protected property dashboard.
+- First-property setup for authenticated users with no properties.
+- Data-backed dashboard property header after a property is created.
+- Static placeholder asset/system cards, pending the guided inventory flow.
 
 The first target is a family-and-friends pilot for homeowners who currently track little or nothing about their home maintenance.
 
@@ -30,12 +38,14 @@ npm run dev
 ```
 
 Copy `.env.example` to `.env.local` and fill in Supabase and Google OAuth values when those services are created.
+Supabase values are required for the current auth and first-property flow.
 
 Useful checks:
 
 ```bash
 npm run lint
 npm run build
+npm run verify:supabase
 ```
 
 ## Core MVP Promise
@@ -55,12 +65,15 @@ npm run build
 - [Product Requirements](docs/product-requirements.md)
 - [UX Flows](docs/ux-flows.md)
 - [Data Model](docs/data-model.md)
+- [Initial Database Schema](docs/database-schema.md)
 - [Tech Stack Decision](docs/tech-stack.md)
 - [Architecture Plan](docs/architecture.md)
 - [Security And Privacy](docs/security-privacy.md)
 - [Roadmap](docs/roadmap.md)
 - [Implementation Plan](docs/implementation-plan.md)
 - [Development Guide](docs/development.md)
+- [Supabase Auth Foundation](docs/supabase-auth.md)
+- [Supabase Setup And Verification](docs/supabase-setup.md)
 - [Decision Records](docs/adr/README.md)
 
 ## Non-Goals For MVP

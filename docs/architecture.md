@@ -45,13 +45,15 @@ The current web scaffold uses the Next.js App Router under `src/app`.
 
 Implemented so far:
 
-- Static dashboard shell in `src/app/page.tsx`.
+- Protected dashboard shell in `src/app/dashboard/page.tsx`.
+- Auth entry screen in `src/app/login/page.tsx`.
+- Root session-aware redirect in `src/app/page.tsx`.
 - Root layout and global Tailwind CSS.
 - Local shadcn/ui-style primitives for buttons, badges, and cards.
 - Typed placeholder domain models in `src/types/home.ts`.
 - Dashboard status metadata for Good, Due Soon, Needs Attention, and Missing Info.
 
-This is intentionally static until authentication, schema, and Supabase-backed data access are implemented.
+Dashboard property context is backed by Supabase. Asset/system cards are still static placeholders until the guided inventory flow is implemented.
 
 ## Backend
 
@@ -69,9 +71,23 @@ Supabase dependencies are installed and helper modules exist for future browser/
 
 - `src/lib/supabase/client.ts`
 - `src/lib/supabase/server.ts`
+- `src/lib/supabase/middleware.ts`
 - `src/lib/env.ts`
+- `src/lib/auth.ts`
 
-No Supabase project, database schema, auth flow, storage bucket, or Google Calendar route has been implemented yet.
+Email/password auth flow, protected route handling, the initial schema migration, and real Supabase connectivity are implemented. No storage bucket, upload flow, work-record schema, reminder schema, contractor schema, document schema, or Google Calendar route has been implemented yet.
+
+### Current Data Implementation
+
+Implemented:
+
+- `supabase/migrations/202606040001_initial_home_schema.sql`.
+- RLS-enabled `profiles`, `properties`, `rooms`, and `asset_systems`.
+- Placeholder generated-style types in `src/types/database.ts`.
+- First-property setup server action in `src/app/dashboard/actions.ts`.
+- Dashboard query for the signed-in user's first property.
+- `npm run verify:supabase` confirms the initial tables are reachable.
+- A test Supabase user/property write path has been verified through RLS.
 
 ## Data Storage
 

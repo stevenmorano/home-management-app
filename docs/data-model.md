@@ -1,6 +1,18 @@
 # Data Model
 
-This is the planned MVP data model. Exact database types may change after stack selection.
+This is the planned MVP data model. The initial implemented schema currently covers `profiles`, `properties`, `rooms`, and `asset_systems`.
+
+Current migration:
+
+```text
+supabase/migrations/202606040001_initial_home_schema.sql
+```
+
+Current placeholder TypeScript database types:
+
+```text
+src/types/database.ts
+```
 
 ## Entity Relationship Overview
 
@@ -262,4 +274,3 @@ erDiagram
 - completed
 - skipped
 - snoozed
-

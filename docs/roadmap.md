@@ -14,15 +14,15 @@
 
 - Select stack. Complete.
 - Create app scaffold. Complete.
-- Set up auth.
-- Set up database.
-- Create property model.
-- Create asset/system model.
-- Build first dashboard shell. Static shell complete; data-backed dashboard still pending.
+- Set up auth. Foundation complete.
+- Set up database. Initial migration applied and verified against Supabase.
+- Create property model. Initial table and first-property flow complete.
+- Create asset/system model. Initial table complete; UI/data flow pending.
+- Build first dashboard shell. Protected shell complete with data-backed property context; asset cards remain static placeholders.
 
 ## Phase 2: Guided Inventory MVP
 
-- Property type onboarding.
+- Property type onboarding. Started through first-property setup.
 - Guided asset checklist by property type.
 - Structured asset entry.
 - Missing info status.

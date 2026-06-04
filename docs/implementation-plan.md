@@ -4,24 +4,34 @@ This plan starts after stack selection.
 
 ## Current Status
 
-Project scaffold is complete for the first static web prototype:
+Project scaffold and authentication foundation are complete for the first protected web prototype:
 
 - Workspace verified at `D:\CodexWorkspaces\home-management-app`.
 - Next.js, React, TypeScript, Tailwind, and shadcn/ui-style component foundation are in place.
 - Supabase client packages and placeholder client/server helpers are installed.
 - `.env.example` documents planned Supabase and Google Calendar variables.
-- Static dashboard shell reflects the Property Health Command Center direction.
+- Protected dashboard shell reflects the Property Health Command Center direction.
+- Supabase auth foundation is implemented with email/password forms, session refresh middleware, auth callback handling, and sign out.
+- Initial Supabase schema migration is implemented for profiles, properties, rooms, and asset systems.
+- RLS policies are included in the initial migration.
+- Authenticated users with no property see a first-property setup form.
+- Authenticated users with a property see that property on the dashboard.
+- `.env.local` placeholder and Supabase schema verification script are in place.
+- Supabase project URL/key are configured locally.
+- Initial migration has been applied in Supabase.
+- `npm run verify:supabase` passes against the real project.
+- A test user and property were created successfully through the RLS-protected write path.
 - `npm run lint` and `npm run build` pass.
-- Local dev server verification returned HTTP 200 for the dashboard shell.
+- Local app verification confirms `/login` renders without the setup warning and unauthenticated `/dashboard` redirects to `/login`.
 
-The next implementation milestone is authentication and Supabase project/schema setup.
+The next implementation milestone is the guided asset/system checklist and replacing static asset cards with Supabase-backed asset records.
 
 ## Build Order
 
 1. Project scaffold. Complete.
-2. Authentication.
-3. Database schema.
-4. Property creation and switching.
+2. Authentication. Foundation complete; password reset and provider-specific polish pending.
+3. Database schema. Initial profiles/properties/rooms/asset systems migration complete.
+4. Property creation and switching. First-property creation complete; multi-property switching pending.
 5. Property type onboarding.
 6. Guided asset/system checklist.
 7. Asset/system CRUD.

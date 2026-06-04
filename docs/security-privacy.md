@@ -24,8 +24,22 @@ The app may store sensitive homeowner data, including:
 
 - `.env.example` documents planned Supabase and Google Calendar variables.
 - Real `.env` and `.env.local` files are ignored by git.
-- Supabase helper modules intentionally fail fast if public Supabase values are missing.
-- No auth, row-level security policies, storage buckets, uploads, or Google OAuth token handling have been implemented yet.
+- Supabase helper modules intentionally fail fast when auth-only code paths require missing public Supabase values.
+- `/login` shows a setup warning when Supabase is not configured.
+- `/dashboard` is protected and redirects unauthenticated users to `/login`.
+- Middleware refreshes Supabase auth cookies for server-rendered routes.
+- Initial RLS policies are included for profiles, properties, rooms, and asset systems.
+- Initial RLS-protected property creation has been verified with a test user.
+- No storage buckets, uploads, or Google OAuth token handling have been implemented yet.
+
+## Row-Level Security Preparation
+
+Before real homeowner data beyond the initial property flow is stored:
+
+- Enable RLS on every user-owned table.
+- Use `auth.uid()` ownership checks for `profiles`, `properties`, and any table with a direct `user_id`.
+- For child records such as rooms, assets, work records, reminders, and documents, enforce access through the owning property or store a redundant `user_id` if that simplifies safe policies.
+- Never rely on client-side filtering as the privacy boundary.
 
 ## Upload Privacy
 

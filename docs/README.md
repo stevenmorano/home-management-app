@@ -8,12 +8,15 @@ This folder contains the planning and design documentation for the Home Manageme
 - [Product Requirements](product-requirements.md): MVP requirements, user stories, success signals, and scope boundaries.
 - [UX Flows](ux-flows.md): onboarding, dashboard, asset, work history, and reminder flows.
 - [Data Model](data-model.md): planned entities, relationships, and enum values.
+- [Initial Database Schema](database-schema.md): current Supabase migration, tables, enums, and RLS policy shape.
 - [Tech Stack Decision](tech-stack.md): recommended languages, frameworks, backend, deployment, and future iOS path.
 - [Architecture Plan](architecture.md): technical architecture direction before stack selection.
 - [Security And Privacy](security-privacy.md): privacy, auth, upload, and data ownership expectations.
 - [Roadmap](roadmap.md): staged path from docs to pilot to public SaaS.
 - [Implementation Plan](implementation-plan.md): recommended build phases.
 - [Development Guide](development.md): local setup, scaffold status, environment variables, and verification commands.
+- [Supabase Auth Foundation](supabase-auth.md): auth routes, helpers, environment variables, and RLS preparation.
+- [Supabase Setup And Verification](supabase-setup.md): local env setup, migration application, and end-to-end auth/property verification.
 
 ## Decision Records
 
