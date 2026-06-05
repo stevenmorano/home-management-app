@@ -76,7 +76,7 @@ erDiagram
 - id
 - property_id
 - room_id nullable
-- name: user-facing recognizable item name, such as Refrigerator, Garage refrigerator, Upstairs HVAC, or Back deck
+- name: user-facing recognizable item name, such as Refrigerator, Garage refrigerator, Upstairs AC, Basement furnace, or Back deck
 - category: structured grouping such as appliance, hvac, deck, roof, or water_heater
 - brand
 - model

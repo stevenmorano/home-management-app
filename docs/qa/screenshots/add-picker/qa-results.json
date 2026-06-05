@@ -1,0 +1,23 @@
+{
+  "email": "homekeep-add-picker-1780674765022@example.com",
+  "results": [
+    {
+      "name": "add-default",
+      "path": "D:\\CodexWorkspaces\\home-management-app\\docs\\qa\\screenshots\\add-picker\\add-default.png",
+      "contentClientHeight": 644,
+      "contentScrollHeight": 1080,
+      "horizontalOverflow": false,
+      "navOverlap": false,
+      "viewportHeight": 844
+    },
+    {
+      "name": "add-refrigerator",
+      "path": "D:\\CodexWorkspaces\\home-management-app\\docs\\qa\\screenshots\\add-picker\\add-refrigerator.png",
+      "contentClientHeight": 644,
+      "contentScrollHeight": 1620,
+      "horizontalOverflow": false,
+      "navOverlap": false,
+      "viewportHeight": 844
+    }
+  ]
+}

@@ -25,8 +25,8 @@
 - Property type onboarding. Started through first-property setup.
 - Guided asset checklist by property type. Complete for the current prototype.
 - Custom asset/system creation. Complete for the current prototype.
-- Repeatable same-type item creation. Complete through specific-name add cards for another refrigerator, dishwasher, HVAC system, deck, water heater, or custom item.
-- Structured asset entry. Expanded editing complete for identity, age, condition, service dates, next due date, maintenance interval, expected lifespan, replacement cost, ownership responsibility, and notes.
+- Repeatable same-type item creation. Complete through compact multi-select starter items plus a focused naming panel for another refrigerator, dishwasher, heating/cooling item, deck, water heater, or custom item.
+- Structured asset entry. Focused detail editing complete for identity, age, condition, service dates, next due date, maintenance interval, expected lifespan, replacement cost, ownership responsibility, and notes.
 - Missing info status. Default Missing Info creation and richer useful-detail status logic complete.
 - Multi-property switcher. Pending.
 
@@ -34,13 +34,13 @@
 
 - Status groups: Good, Due Soon, Needs Attention, Missing Info. Data-backed counts and status reasons implemented.
 - HomeKeep Modern Care visual dashboard. First pass complete.
-- HomeCare Glass refinement. Implemented for richer system rows, missing-info prompts, compressed repeatable add-item UX, and friendlier detail surfaces.
+- HomeCare Glass refinement. Implemented for richer system rows, missing-info prompts, compact multi-select add-item UX, and Service Passport detail surfaces.
 - Mobile-first dashboard shell. Implemented with Home, Systems, Add, and More sections plus phone bottom navigation.
 - Asset rows. Data-backed visual system rows implemented with icon tiles, last service, next check, status, and links to focused detail views.
 - Upcoming maintenance. Data-backed from due-soon/needs-attention asset status.
 - Overdue items.
 - Recently completed work.
-- Premium mobile/tablet layout. Authenticated mobile screenshot QA and first polish pass complete; next refinement is a more focused Add flow that avoids showing many mini-forms at once.
+- Premium mobile/tablet layout. Authenticated mobile screenshot QA, first polish pass, Add picker screenshot QA, compact Add picker QA, and Asset Detail passport QA complete; next refinement is a selected-item review wizard for quantities and names.
 
 ## Phase 4: Work History And Contractors
 

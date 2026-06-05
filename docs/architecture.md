@@ -55,7 +55,7 @@ Implemented so far:
 - Dashboard status metadata for Good, Due Soon, Needs Attention, and Missing Info.
 - Guided asset/system starter flow for properties with no assets.
 - Data-backed visual asset/system rows for created inventory records.
-- Reopenable Add flow with repeatable starter cards, editable default names, Popular picks, and expandable More home items.
+- Reopenable Add flow with compact multi-select starter tiles, specific heating/cooling choices, Popular picks, and expandable More home items.
 - Mobile-first dashboard tabs for Home, Systems, Add, and More.
 - Phone bottom navigation with desktop segmented navigation.
 - Focused Systems detail view at `/dashboard?tab=systems&asset=<id>`.

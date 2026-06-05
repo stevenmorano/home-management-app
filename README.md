@@ -14,13 +14,13 @@ Current app surfaces:
 - `/dashboard`: protected property dashboard.
 - `/dashboard?tab=home`: mobile-first Home summary.
 - `/dashboard?tab=systems`: full inventory and selected asset detail views.
-- `/dashboard?tab=add`: compressed repeatable add flow.
+- `/dashboard?tab=add`: compact multi-select Add picker.
 - `/dashboard?tab=more`: property/account utility view.
 - First-property setup for authenticated users with no properties.
 - HomeKeep Modern Care dashboard with a home health score, upcoming maintenance, quick actions, and visual home-system rows.
 - Guided add flow for starter systems/assets based on property type.
 - Mobile-first dashboard sections for Home, Systems, Add, and More.
-- Compressed repeatable add flow with editable names for another refrigerator, dishwasher, HVAC system, deck, water heater, or custom item.
+- Compact multi-select Add picker with specific heating/cooling items and a focused naming panel for repeat/custom items.
 - Data-backed asset/system rows after checklist or custom creation.
 - Reopenable Add item flow with repeatable starter cards and added-count labels.
 - Focused asset detail editing for identity, age, maintenance, planning, responsibility, and notes.
@@ -63,7 +63,7 @@ npm run verify:supabase
 - Select property type, such as house, condo, apartment, rental, or vacation home.
 - Build a guided inventory of major systems/assets.
 - Track install/replacement years, service dates, age ranges, condition, expected lifespan, replacement cost, brand/model/serial, ownership responsibility, and notes.
-- Add multiple same-type items with specific names, such as Garage refrigerator, Butler pantry dishwasher, Upstairs HVAC, or Back deck.
+- Add multiple same-type items with specific names, such as Garage refrigerator, Butler pantry dishwasher, Upstairs AC, Basement furnace, or Back deck.
 - See a visual dashboard with Good, Due Soon, Needs Attention, and Missing Info.
 - Get in-app reminders and sync selected maintenance events to Google Calendar.
 - Optionally upload documents, receipts, warranties, manuals, and photos.

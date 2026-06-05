@@ -94,7 +94,7 @@ Rooms are not yet exposed in the UI.
 
 ### `asset_systems`
 
-Purpose: major home systems/assets such as roof, HVAC, water heater, gutters, appliances, and similar records.
+Purpose: major home systems/assets such as roof, central AC, furnace, boiler, water heater, gutters, appliances, and similar records.
 
 Key columns:
 

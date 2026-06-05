@@ -40,7 +40,7 @@
 
 The app opens to a property-focused dashboard rather than a generic task list. At the top, the user sees the active property and a property switcher. If the user only has one home, the switcher stays quiet. If they have multiple properties, switching should be fast and obvious.
 
-The dashboard acts as a visual health overview of the home. It shows major systems/assets such as roof, HVAC, boiler, water heater, gutters, appliances, electrical, plumbing, windows, deck, driveway, pool, and similar items as clear status cards or tiles.
+The dashboard acts as a visual health overview of the home. It shows major systems/assets such as roof, central AC, heat pump, furnace, boiler, water heater, gutters, appliances, electrical, plumbing, windows, deck, driveway, pool, and similar items as clear status cards or tiles.
 
 The primary user loop is:
 
@@ -65,7 +65,7 @@ First-run onboarding begins by asking for property type:
 - Vacation home
 - Other
 
-The selected property type controls the suggested asset list. For a single-family house, the list may include roof, gutters, HVAC, furnace/boiler, water heater, plumbing, electrical panel, individual appliances, chimney, foundation, windows, deck, driveway, sump pump, septic/sewer, irrigation, pool, and garage systems. For a condo or apartment, the list should de-emphasize roof/foundation and emphasize appliances, HVAC units, water heater if owned, electrical panel, fixtures, smoke detectors, windows, and maintenance responsibilities.
+The selected property type controls the suggested asset list. For a single-family house, the list may include roof, gutters, central AC, heat pump, mini-split, furnace, boiler, fireplace, thermostat, water heater, plumbing, electrical panel, individual appliances, chimney, foundation, windows, deck, driveway, sump pump, septic/sewer, irrigation, pool, and garage systems. For a condo or apartment, the list should de-emphasize roof/foundation and emphasize appliances, owned heating/cooling units, water heater if owned, electrical panel, fixtures, smoke detectors, windows, and maintenance responsibilities.
 
 Repeated assets should be added from the same main flow by editing the default name, for example changing Refrigerator to Basement fridge, then adding another Refrigerator as Kitchen fridge.
 
@@ -89,7 +89,7 @@ The property is the container for everything else. It includes type, address or 
 
 ### Asset/System
 
-Asset/System is the central object. It includes roof, HVAC, boiler, water heater, appliances, electrical panel, plumbing, gutters, windows, deck, driveway, pool, and other costly or maintenance-relevant items.
+Asset/System is the central object. It includes roof, central AC, heat pump, mini-split, furnace, boiler, water heater, appliances, electrical panel, plumbing, gutters, windows, deck, driveway, pool, and other costly or maintenance-relevant items.
 
 Important fields include:
 
@@ -116,7 +116,7 @@ Work records track anything done to the home, including maintenance, repairs, in
 Examples:
 
 - Cleaned gutters
-- Serviced HVAC
+- Serviced furnace
 - Replaced water heater
 - Installed deck
 - Redid driveway

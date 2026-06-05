@@ -85,7 +85,7 @@ Then verify:
 6. Confirm the dashboard shows that property in the header.
 7. Add starter assets.
 8. Confirm Add item reopens the guided add flow and starter items can be renamed and added again from Popular picks or More home items.
-9. Add a repeated same-type item with a specific name, such as Garage refrigerator or Upstairs HVAC.
+9. Add a repeated same-type item with a specific name, such as Garage refrigerator, Upstairs AC, or Basement furnace.
 10. Save asset details, including service dates, maintenance interval, replacement planning, and notes.
 11. Remove an asset only after typing `REMOVE`.
 12. Sign out.

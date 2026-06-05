@@ -2,7 +2,7 @@
 
 Date: 2026-06-05
 
-Scope: authenticated mobile visual QA for the Home, Add, Systems, and Asset Detail dashboard sections after the mobile-first tab shell, focused asset detail view, compressed Add flow, and mobile polish passes.
+Scope: authenticated mobile visual QA for the Home, Add, Systems, and Asset Detail dashboard sections after the mobile-first tab shell, focused asset detail view, compressed Add flow, mobile polish passes, and Add object-picker redesign.
 
 Viewport used: 390 x 844, touch/mobile context.
 
@@ -18,6 +18,13 @@ Screenshots:
 - `docs/qa/screenshots/mobile-qa-polish/systems.png`
 - `docs/qa/screenshots/mobile-qa-polish/asset-detail.png`
 - `docs/qa/screenshots/mobile-qa-polish/qa-results.json`
+- `docs/qa/screenshots/add-picker/add-default.png`
+- `docs/qa/screenshots/add-picker/add-refrigerator.png`
+- `docs/qa/screenshots/add-picker/qa-results.json`
+- `docs/qa/screenshots/asset-detail-passport/asset-detail-passport.png`
+- `docs/qa/screenshots/asset-detail-passport/qa-results.json`
+- `docs/qa/screenshots/compact-add-picker/compact-add-default.png`
+- `docs/qa/screenshots/compact-add-picker/qa-results.json`
 
 ## Result
 
@@ -36,6 +43,8 @@ Passes:
 - Home Health stacks on phone with readable status rows.
 - Systems rows are more compact and rely on the detail view for the fuller explanation/edit surface.
 - Asset detail header wraps names instead of truncating important household labels.
+- Add flow now uses compact multi-select object tiles for first setup and a focused naming panel for repeats/custom names instead of showing many editable mini-forms at once.
+- Asset Detail now uses a premium Service Passport hero with status, service metrics, status explanation, notes, record profile, and compact edit area.
 
 Initial measured scroll height:
 
@@ -55,6 +64,25 @@ Polish pass metrics:
 | Systems | 1250 | No | No |
 | Asset detail | 2387 | No | No |
 
+Add picker redesign metrics:
+
+| Screen | Content Scroll Height | Bottom Nav Overlap | Horizontal Overflow |
+| --- | ---: | --- | --- |
+| Add default picker | 1080 | No | No |
+| Add with Refrigerator selected | 1620 | No | No |
+
+Compact Add picker metrics:
+
+| Screen | Selectable Starter Tiles | Content Scroll Height | Bottom Nav Overlap | Horizontal Overflow |
+| --- | ---: | ---: | --- | --- |
+| Compact Add default | 17 | 944 | No | No |
+
+Asset detail passport metrics:
+
+| Screen | Content Scroll Height | Bottom Nav Overlap | Horizontal Overflow |
+| --- | ---: | --- | --- |
+| Asset detail passport | 2546 | No | No |
+
 ## Findings
 
 Initial Priority 1:
@@ -65,9 +93,10 @@ Initial Priority 1:
 
 Initial Priority 2:
 
-- Still open: Add is shorter than before, but Popular picks still shows editable mini-forms. A future design pass can make this feel more like a tapped chooser or drawer.
+- Fixed in Add picker pass: Add no longer shows editable mini-forms by default. The first setup view now supports compact multi-select object tiles, while repeat/custom naming remains available through one focused panel.
 - Fixed in polish pass: Systems list rows are more compact and no longer repeat the full status explanation.
 - Fixed in polish pass: Asset detail header wraps names instead of aggressively truncating them.
+- Fixed in detail passport pass: Asset Detail now has stronger premium hierarchy, readable asset names, and no horizontal overflow or nav overlap in mobile QA.
 
 Priority 3:
 
@@ -75,4 +104,4 @@ Priority 3:
 
 ## Recommended Next Fix
 
-The immediate mobile QA fixes are complete. The next visual improvement should be a deeper Add flow redesign: tap a household object, edit the suggested name in a small focused surface, then add it. This would preserve repeatable assets while reducing visible mini-forms on phone.
+The immediate mobile QA fixes, compact Add picker redesign, and first Asset Detail passport polish are complete. The next Add milestone is a true second-step review wizard for quantities and custom names before creating records.

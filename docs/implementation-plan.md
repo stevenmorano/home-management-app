@@ -29,7 +29,7 @@ Project scaffold and authentication foundation are complete for the first protec
 - Duplicate starter submissions are guarded in app code, collapsed in the dashboard, and covered by the applied database uniqueness migration.
 - The database unique index has been verified by attempting a duplicate insert and receiving constraint error `23505`.
 - Add item reopens the guided add flow after assets exist.
-- Guided add starter items are repeatable, editable-name cards instead of disabled one-time checklist options.
+- Guided add starter items are compact multi-select object tiles instead of disabled one-time checklist options.
 - Inline asset detail editing is implemented for install year, estimated age, condition, last service date, and notes.
 - Custom asset/system creation is implemented from the dashboard inventory panel.
 - Inline asset detail editing now also supports maintenance interval value, maintenance interval unit, and next service due date.
@@ -40,11 +40,14 @@ Project scaffold and authentication foundation are complete for the first protec
 - The first HomeKeep Modern Care UI pass is implemented: bright modern app palette, HomeKeep-style header, home health score card, upcoming maintenance list, quick actions, visual home-system rows, asset detail editing, and typed delete confirmation.
 - Checklist appliance suggestions now create individual appliance records instead of one generic Major appliances record.
 - The guided add flow supports multiple same-type items by editing the default name, such as changing Refrigerator to Garage refrigerator or Kitchen refrigerator.
-- The Add tab is compressed for phones with Popular picks first, remaining suggestions behind More home items, and a compact custom-add form.
+- The Add tab is compressed for phones with a compact multi-select Popular picks grid, remaining suggestions behind More home items, and a compact custom-add form.
+- The Add tab now uses specific starter items instead of vague HVAC buckets, including Central AC, Heat pump, Mini-split, Furnace, Fireplace, Thermostat, and Water heater.
+- The Add tab still supports focused naming for repeat/custom items, such as changing Refrigerator to Basement fridge or Kitchen fridge.
 - The dashboard now uses mobile-first app sections: Home, Systems, Add, and More.
 - Phone screens use bottom navigation; larger screens use a segmented section nav.
 - Home is a shorter summary screen with a compact systems preview, while Systems holds the full editable inventory list.
 - Systems rows now open a focused asset detail/edit view instead of embedding expanded editors in every row.
+- Asset detail now uses a premium Service Passport layout with a stronger hero, status badge, service metric cards, status explanation, notes, record profile, and compact edit area.
 - Asset detail updates are ownership-checked through the parent property.
 - Custom asset creation, asset detail updates, and asset removal are ownership-checked through the parent property.
 - Asset detail update flow has been verified against Supabase with a temporary test user/property/asset.
@@ -54,8 +57,10 @@ Project scaffold and authentication foundation are complete for the first protec
 - Authenticated mobile visual QA is complete for Home, Add, Systems, and Asset Detail. Findings are recorded in `docs/qa/mobile-visual-qa.md`.
 - Mobile QA polish is implemented for bottom navigation overlap, Home Health compaction, Systems row compaction, and Asset Detail header wrapping.
 - Follow-up authenticated mobile visual QA confirms no bottom-nav overlap and no horizontal overflow for Home, Add, Systems, and Asset Detail.
+- Add picker visual QA confirms no bottom-nav overlap and no horizontal overflow for the compact multi-select picker, default picker, and selected Refrigerator naming panel.
+- Asset detail passport visual QA confirms no bottom-nav overlap and no horizontal overflow for the selected asset detail screen.
 
-The next implementation milestone is a deeper mobile Add flow redesign: tap a household object first, then edit the suggested name in a smaller focused surface instead of showing many mini-forms at once.
+The next implementation milestone is a true second-step review wizard for selected items: choose quantities, customize names, and then create records.
 
 ## Build Order
 
@@ -67,7 +72,7 @@ The next implementation milestone is a deeper mobile Add flow redesign: tap a ho
 6. Guided asset/system starter flow. Complete for initial creation and repeatable named additions.
 7. Asset/system CRUD. Create from starter cards, custom asset creation, focused detail editing, and removal are complete; detail UX polish is in progress.
 8. Dashboard status calculation. Data-backed status counts now consider condition and due dates; status explanation/polish pending.
-9. Home health dashboard UI. HomeKeep Modern Care, HomeCare Glass, mobile-first tab shell, focused asset detail, Add compression, authenticated mobile screenshot QA, and first mobile QA polish are complete; deeper Add flow polish is pending.
+9. Home health dashboard UI. HomeKeep Modern Care, HomeCare Glass, mobile-first tab shell, compact multi-select Add picker, focused Service Passport asset detail, authenticated mobile screenshot QA, and first mobile QA polish are complete; selected-item review wizard is pending.
 10. Work records.
 11. Contractors.
 12. Reminders.

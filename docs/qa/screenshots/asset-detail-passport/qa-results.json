@@ -1,0 +1,14 @@
+{
+  "email": "homekeep-detail-passport-1780679315847@example.com",
+  "results": [
+    {
+      "name": "asset-detail-passport",
+      "path": "D:\\CodexWorkspaces\\home-management-app\\docs\\qa\\screenshots\\asset-detail-passport\\asset-detail-passport.png",
+      "contentClientHeight": 644,
+      "contentScrollHeight": 2546,
+      "horizontalOverflow": false,
+      "navOverlap": false,
+      "viewportHeight": 844
+    }
+  ]
+}

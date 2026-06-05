@@ -2,7 +2,7 @@
 
 ## Product Summary
 
-The Home Management Operating System helps homeowners keep track of the major things their home depends on: roof, HVAC, water heater, appliances, gutters, electrical, plumbing, deck, driveway, pool, and similar assets/systems.
+The Home Management Operating System helps homeowners keep track of the major things their home depends on: roof, central AC, heat pump, furnace, boiler, water heater, appliances, gutters, electrical, plumbing, deck, driveway, pool, and similar assets/systems.
 
 The MVP is not primarily a chore app. It is a home inventory, maintenance, reminder, and work-history system designed to help users avoid expensive surprises.
 
@@ -43,7 +43,7 @@ The MVP is not primarily a chore app. It is a home inventory, maintenance, remin
 - Users can select known items, skip unknown items, and return later.
 - Users can add custom assets/systems.
 - Users can add individual appliance records rather than one vague "major appliances" record.
-- Users can add multiple same-type items by giving each item a specific name, such as Garage refrigerator, Butler pantry dishwasher, Upstairs HVAC, or Back deck.
+- Users can add multiple same-type items by giving each item a specific name, such as Garage refrigerator, Butler pantry dishwasher, Upstairs AC, Basement furnace, or Back deck.
 
 ### Assets And Systems
 

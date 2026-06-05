@@ -57,16 +57,19 @@ Current implementation:
 
 - Properties with no assets show a guided starter add flow based on `property_type`.
 - Users can reopen the guided add flow from the dashboard with Add item.
-- Starter items are repeatable cards, not one-time disabled checklist options.
-- Each starter card has an editable "Name in your home" field with a sensible default, such as Refrigerator, so users can rename it to Basement fridge before adding.
-- Starter cards create `asset_systems` rows one at a time.
+- Starter items are compact multi-select object tiles, not one-time disabled checklist options.
+- The first Add view lets users select many things they have at once.
+- Bulk selected starter tiles create one `asset_systems` row per selected item, then send the user to Systems for review.
+- Tapping a repeat/custom starter still opens one focused naming panel with an editable "Name in your home" field and a sensible default, such as Refrigerator, so users can rename it to Basement fridge before adding.
 - Users can add custom assets/systems beyond the starter list by choosing a category and name.
-- Users can add multiple items of the same type by giving each one a specific recognizable name, such as Garage refrigerator, Butler pantry dishwasher, Upstairs HVAC, or Back deck.
-- The add flow supports repeatable items from a compressed Popular picks section and an expandable More home items section instead of a separate "add another" section.
+- Users can add multiple items of the same type by giving each one a specific recognizable name, such as Garage refrigerator, Butler pantry dishwasher, Upstairs AC, Basement furnace, or Back deck.
+- The add flow supports compact multi-select items from Popular picks and an expandable More home items section instead of showing many mini-forms at once.
+- Heating/cooling starters are specific user-facing items, such as Central AC, Heat pump, Mini-split, Furnace, Fireplace, Thermostat, and Water heater, instead of one vague HVAC choice.
 - New starter assets default to `status = missing_info`, `condition = unknown`, `estimated_age_range = unknown`, and `ownership_responsibility = owner`.
 - Dashboard asset cards read from Supabase.
 - Dashboard asset cards show compact record summaries by default, including next action and status reason.
 - Dashboard asset cards link to a focused Systems detail view at `/dashboard?tab=systems&asset=<id>`.
+- The detail view uses a Service Passport layout with a hero, status badge, service metrics, status explanation, notes, record profile, and compact edit area.
 - The detail view exposes the full details form for brand, model, serial number, install year, estimated age, condition, last service date, next service due date, maintenance interval, expected lifespan, estimated replacement cost, ownership responsibility, and notes.
 - The detail view includes a typed confirmation remove flow for deleting an asset from the property inventory.
 - The Systems list stays compact on phones because long edit forms are no longer embedded in every row.
@@ -95,7 +98,7 @@ Current implementation:
 - Phone layout includes bottom navigation so users do not scroll through every dashboard surface at once.
 - Home is a compact summary with home health, upcoming maintenance, quick actions, and a systems preview.
 - Systems contains the full inventory and selected-asset detail/edit views.
-- Add contains the compressed guided repeatable add-item flow.
+- Add contains the compact multi-select starter flow plus focused repeat/custom naming.
 - More contains property/account utility surfaces.
 - The dashboard/sidebar split is reserved for wider desktop screens; tablet and smaller layouts prioritize focused sections and a single readable column.
 - Asset records with unknown or incomplete details remain Missing Info.
@@ -126,7 +129,7 @@ Reminder creation should support:
 
 Calendar-worthy examples:
 
-- HVAC service.
+- Central AC service.
 - Boiler service.
 - Chimney inspection.
 - Gutter cleaning.

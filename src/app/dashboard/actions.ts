@@ -333,7 +333,7 @@ export async function createSelectedAssets(formData: FormData) {
   }
 
   if (selectedAssets.length === 0) {
-    redirect("/dashboard?message=Select%20at%20least%20one%20asset%20or%20system");
+    redirect("/dashboard?tab=add&message=Select%20at%20least%20one%20asset%20or%20system");
   }
 
   const { property, supabase } = await requireOwnedProperty(propertyId, user.id);
@@ -362,7 +362,7 @@ export async function createSelectedAssets(formData: FormData) {
   );
 
   if (newAssets.length === 0) {
-    redirect("/dashboard?message=Those%20assets%20already%20exist%20for%20this%20property");
+    redirect("/dashboard?tab=add&message=Those%20assets%20already%20exist%20for%20this%20property");
   }
 
   const inserts: AssetSystemInsert[] = newAssets.map((asset) => ({
@@ -379,16 +379,17 @@ export async function createSelectedAssets(formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      redirect("/dashboard?message=Some%20selected%20assets%20already%20exist%20for%20this%20property");
+      redirect("/dashboard?tab=add&message=Some%20selected%20assets%20already%20exist%20for%20this%20property");
     }
 
     const params = new URLSearchParams({
+      tab: "add",
       message: `Could not create assets: ${error.message}`
     });
     redirect(`/dashboard?${params.toString()}`);
   }
 
-  redirect("/dashboard");
+  redirect("/dashboard?tab=systems&message=Selected%20items%20added");
 }
 
 export async function createCustomAsset(formData: FormData) {
@@ -402,7 +403,7 @@ export async function createCustomAsset(formData: FormData) {
   }
 
   if (!name) {
-    redirect("/dashboard?inventory=1&message=Asset%20name%20is%20required");
+    redirect("/dashboard?tab=add&message=Asset%20name%20is%20required");
   }
 
   const { property, supabase } = await requireOwnedProperty(propertyId, user.id);
@@ -419,17 +420,17 @@ export async function createCustomAsset(formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      redirect("/dashboard?inventory=1&message=That%20asset%20already%20exists%20for%20this%20property");
+      redirect("/dashboard?tab=add&message=That%20asset%20already%20exists%20for%20this%20property");
     }
 
     const params = new URLSearchParams({
-      inventory: "1",
+      tab: "add",
       message: `Could not create custom asset: ${error.message}`
     });
     redirect(`/dashboard?${params.toString()}`);
   }
 
-  redirect("/dashboard?message=Custom%20asset%20created");
+  redirect("/dashboard?tab=add&message=Item%20added");
 }
 
 export async function updateAssetDetails(formData: FormData) {

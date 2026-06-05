@@ -27,6 +27,7 @@ import { createElement } from "react";
 import {
   createCustomAsset,
   createFirstProperty,
+  createSelectedAssets,
   deleteAsset,
   updateAssetDetails
 } from "@/app/dashboard/actions";
@@ -91,6 +92,7 @@ interface DashboardPageProps {
     asset?: string;
     inventory?: string;
     message?: string;
+    starter?: string;
     tab?: string;
   }>;
 }
@@ -100,6 +102,7 @@ type AssetStarterOption = {
   category: AssetSystemCategory;
   description: string;
   name: string;
+  shortName?: string;
 };
 
 const dashboardTabs: Array<{
@@ -129,23 +132,37 @@ const commonAssetOptions: Record<PropertyType, AssetStarterOption[]> = {
   single_family_house: [
     { category: "roof", name: "Roof", description: "Age, material, inspections, and replacement planning." },
     { category: "gutters", name: "Gutters", description: "Cleaning cadence, repairs, and drainage concerns." },
-    { category: "hvac", name: "HVAC", description: "Cooling system, filters, service dates, and seasonal checks." },
+    { category: "hvac", name: "Central AC", shortName: "Central AC", description: "Outdoor condenser, air handler, filters, and service dates." },
+    { category: "hvac", name: "Heat pump", description: "Heating/cooling equipment, filters, service, and seasonal checks." },
+    { category: "hvac", name: "Mini-split", description: "Ductless heating/cooling heads and outdoor units." },
+    { category: "hvac", name: "Window AC", description: "Room air conditioner, age, filter cleaning, and storage." },
+    { category: "hvac", name: "Wall AC", description: "Through-wall air conditioner, age, filters, and service." },
     { category: "furnace", name: "Furnace", description: "Heating equipment, age, service, and safety checks." },
+    { category: "boiler", name: "Boiler", description: "Hydronic heating, service records, age, and safety checks." },
+    { category: "chimney", name: "Fireplace", shortName: "Fireplace", description: "Firebox, chimney, inspections, cleaning, and safety." },
+    { category: "hvac", name: "Thermostat", shortName: "Thermo", description: "Controls, smart thermostat setup, and replacement notes." },
     { category: "water_heater", name: "Water heater", description: "Age, condition, warranty, and replacement window." },
-    { category: "electrical", name: "Electrical panel", description: "Panel details, upgrades, and inspection records." },
+    { category: "electrical", name: "Electrical panel", shortName: "Elec panel", description: "Panel details, upgrades, and inspection records." },
     { category: "plumbing", name: "Plumbing", description: "Known issues, shutoffs, sewer/septic context, and repairs." },
     { category: "windows", name: "Windows", description: "Age, leaks, drafts, and replacement planning." },
     { category: "driveway", name: "Driveway", description: "Surface condition, sealing, drainage, and repairs." },
     { category: "deck", name: "Deck", description: "Material, age, staining, inspections, and repairs." },
     { category: "sump_pump", name: "Sump pump", description: "Testing cadence, backup power, and replacement age." },
-    { category: "appliance", name: "Refrigerator", description: "Kitchen appliance, age, warranty, and service notes." },
-    { category: "appliance", name: "Dishwasher", description: "Kitchen appliance, age, leaks, warranty, and repairs." },
+    { category: "appliance", name: "Refrigerator", shortName: "Fridge", description: "Kitchen appliance, age, warranty, and service notes." },
+    { category: "appliance", name: "Dishwasher", shortName: "Dishwasher", description: "Kitchen appliance, age, leaks, warranty, and repairs." },
     { category: "appliance", name: "Range or oven", description: "Cooking appliance, age, service, and warranty details." },
     { category: "appliance", name: "Washer", description: "Laundry appliance, age, hoses, warranty, and repairs." },
     { category: "appliance", name: "Dryer", description: "Laundry appliance, vent cleaning, age, and repairs." }
   ],
   condo: [
-    { category: "hvac", name: "HVAC", description: "Owned units, filters, and service records." },
+    { category: "hvac", name: "Central AC", description: "Owned unit, filters, and service records." },
+    { category: "hvac", name: "Heat pump", description: "Owned heating/cooling equipment and service records." },
+    { category: "hvac", name: "Mini-split", description: "Ductless heads, outdoor unit, and service records." },
+    { category: "hvac", name: "Window AC", description: "Room air conditioner, age, and filter cleaning." },
+    { category: "hvac", name: "Wall AC", description: "Through-wall air conditioner, age, filters, and service." },
+    { category: "furnace", name: "Furnace", description: "Owned heating equipment and service records." },
+    { category: "boiler", name: "Boiler", description: "Owned hydronic heating equipment and service records." },
+    { category: "hvac", name: "Thermostat", description: "Controls, smart thermostat setup, and replacement notes." },
     { category: "water_heater", name: "Water heater", description: "Owned equipment, age, and replacement planning." },
     { category: "appliance", name: "Refrigerator", description: "Kitchen appliance, age, warranty, and service notes." },
     { category: "appliance", name: "Dishwasher", description: "Kitchen appliance, age, leaks, warranty, and repairs." },
@@ -158,7 +175,14 @@ const commonAssetOptions: Record<PropertyType, AssetStarterOption[]> = {
     { category: "security", name: "Smoke and safety systems", description: "Detectors, alarms, and testing cadence." }
   ],
   coop: [
-    { category: "hvac", name: "HVAC", description: "Owned or building-provided heating/cooling context." },
+    { category: "hvac", name: "Central AC", description: "Owned or building-provided cooling context." },
+    { category: "hvac", name: "Heat pump", description: "Owned heating/cooling equipment and service context." },
+    { category: "hvac", name: "Mini-split", description: "Ductless heads, outdoor unit, and service context." },
+    { category: "hvac", name: "Window AC", description: "Room air conditioner, age, and filter cleaning." },
+    { category: "hvac", name: "Wall AC", description: "Through-wall air conditioner, age, filters, and service." },
+    { category: "furnace", name: "Furnace", description: "Owned or building heating equipment context." },
+    { category: "boiler", name: "Boiler", description: "Owned or building hydronic heating context." },
+    { category: "hvac", name: "Thermostat", description: "Controls, smart thermostat setup, and replacement notes." },
     { category: "appliance", name: "Refrigerator", description: "Kitchen appliance, age, warranty, and service notes." },
     { category: "appliance", name: "Dishwasher", description: "Kitchen appliance, age, leaks, warranty, and repairs." },
     { category: "appliance", name: "Range or oven", description: "Cooking appliance, age, service, and warranty details." },
@@ -173,14 +197,23 @@ const commonAssetOptions: Record<PropertyType, AssetStarterOption[]> = {
     { category: "appliance", name: "Refrigerator", description: "Owned appliance, warranty, and service notes." },
     { category: "appliance", name: "Dishwasher", description: "Owned appliance, age, leaks, warranty, and repairs." },
     { category: "appliance", name: "Range or oven", description: "Owned cooking appliance and warranty details." },
-    { category: "hvac", name: "HVAC", description: "Unit filters, service access, and responsibility." },
+    { category: "hvac", name: "Central AC", description: "Unit filters, service access, and responsibility." },
+    { category: "hvac", name: "Heat pump", description: "Heating/cooling unit, filters, and responsibility." },
+    { category: "hvac", name: "Mini-split", description: "Ductless heads, filters, and responsibility." },
+    { category: "hvac", name: "Window AC", description: "Room air conditioner, age, and filter cleaning." },
+    { category: "hvac", name: "Wall AC", description: "Through-wall air conditioner, age, and filters." },
+    { category: "hvac", name: "Thermostat", description: "Controls, smart thermostat setup, and replacement notes." },
     { category: "plumbing", name: "Plumbing fixtures", description: "Fixtures, shutoffs, and maintenance responsibility." },
     { category: "electrical", name: "Electrical panel", description: "Panel location and safety notes." },
     { category: "security", name: "Smoke and safety systems", description: "Detectors, alarms, and testing cadence." }
   ],
   multi_family: [
     { category: "roof", name: "Roof", description: "Age, material, inspections, and replacement planning." },
-    { category: "hvac", name: "HVAC systems", description: "Shared or unit-specific systems and service cadence." },
+    { category: "hvac", name: "Central AC", description: "Shared or unit-specific cooling equipment and service cadence." },
+    { category: "hvac", name: "Heat pump", description: "Shared or unit-specific heating/cooling equipment." },
+    { category: "hvac", name: "Mini-split", description: "Ductless heads, outdoor units, and service cadence." },
+    { category: "furnace", name: "Furnace", description: "Shared or unit-specific heating equipment." },
+    { category: "boiler", name: "Boiler", description: "Shared or unit-specific hydronic heating equipment." },
     { category: "water_heater", name: "Water heaters", description: "Shared or unit-specific equipment and age." },
     { category: "electrical", name: "Electrical panels", description: "Main and unit panels, upgrades, and inspections." },
     { category: "plumbing", name: "Plumbing", description: "Main lines, shutoffs, fixtures, and known issues." },
@@ -192,7 +225,10 @@ const commonAssetOptions: Record<PropertyType, AssetStarterOption[]> = {
     { category: "appliance", name: "Dryer", description: "Unit laundry appliance, vent cleaning, and responsibility." }
   ],
   rental: [
-    { category: "hvac", name: "HVAC", description: "Service cadence and tenant/owner responsibility." },
+    { category: "hvac", name: "Central AC", description: "Service cadence and tenant/owner responsibility." },
+    { category: "hvac", name: "Heat pump", description: "Heating/cooling service and responsibility." },
+    { category: "hvac", name: "Mini-split", description: "Ductless heads, filters, and responsibility." },
+    { category: "furnace", name: "Furnace", description: "Heating equipment service and responsibility." },
     { category: "water_heater", name: "Water heater", description: "Age, condition, and replacement planning." },
     { category: "appliance", name: "Refrigerator", description: "Included appliance, warranty, and repair records." },
     { category: "appliance", name: "Dishwasher", description: "Included appliance, leaks, warranty, and repairs." },
@@ -203,7 +239,12 @@ const commonAssetOptions: Record<PropertyType, AssetStarterOption[]> = {
   ],
   vacation_home: [
     { category: "roof", name: "Roof", description: "Age, inspections, weather exposure, and replacement planning." },
-    { category: "hvac", name: "HVAC", description: "Seasonal service and remote-property reliability." },
+    { category: "hvac", name: "Central AC", description: "Seasonal service and remote-property reliability." },
+    { category: "hvac", name: "Heat pump", description: "Heating/cooling reliability and seasonal service." },
+    { category: "hvac", name: "Mini-split", description: "Ductless heads, outdoor units, and seasonal service." },
+    { category: "furnace", name: "Furnace", description: "Heating equipment, service, and winter reliability." },
+    { category: "boiler", name: "Boiler", description: "Hydronic heating, service, and winter reliability." },
+    { category: "chimney", name: "Fireplace", description: "Firebox, chimney, inspections, cleaning, and safety." },
     { category: "water_heater", name: "Water heater", description: "Age, winterization, and replacement planning." },
     { category: "plumbing", name: "Plumbing", description: "Winterization, shutoffs, and leak prevention." },
     { category: "security", name: "Security system", description: "Monitoring, cameras, alarms, and access." },
@@ -214,7 +255,10 @@ const commonAssetOptions: Record<PropertyType, AssetStarterOption[]> = {
     { category: "septic_or_sewer", name: "Septic or sewer", description: "Pumping, inspections, and responsibility." }
   ],
   other: [
-    { category: "hvac", name: "HVAC", description: "Heating/cooling system, filters, and service records." },
+    { category: "hvac", name: "Central AC", description: "Cooling system, filters, and service records." },
+    { category: "hvac", name: "Heat pump", description: "Heating/cooling equipment and service records." },
+    { category: "furnace", name: "Furnace", description: "Heating equipment and service records." },
+    { category: "boiler", name: "Boiler", description: "Hydronic heating equipment and service records." },
     { category: "water_heater", name: "Water heater", description: "Age, condition, warranty, and replacement window." },
     { category: "electrical", name: "Electrical", description: "Panel details, upgrades, and inspection records." },
     { category: "plumbing", name: "Plumbing", description: "Known issues, shutoffs, and repairs." },
@@ -304,6 +348,16 @@ function getServiceDisplay(value: string | null, fallback: string) {
   return value ?? fallback;
 }
 
+function formatSelectValue(value?: string | null) {
+  if (!value) {
+    return "Unknown";
+  }
+
+  return value
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 function getSuggestedNameExamples(category: AssetSystemCategory) {
   const examples: Partial<Record<AssetSystemCategory, string>> = {
     appliance: "Kitchen refrigerator, washer, dryer",
@@ -318,6 +372,42 @@ function getSuggestedNameExamples(category: AssetSystemCategory) {
 
 function getStarterNamePlaceholder(option: { category: AssetSystemCategory; name: string }) {
   const key = option.name.toLowerCase();
+
+  if (key.includes("central ac")) {
+    return "Main floor AC, upstairs AC";
+  }
+
+  if (key.includes("heat pump")) {
+    return "Main heat pump, upstairs heat pump";
+  }
+
+  if (key.includes("mini-split")) {
+    return "Bedroom mini-split, garage mini-split";
+  }
+
+  if (key.includes("window ac")) {
+    return "Bedroom window AC";
+  }
+
+  if (key.includes("wall ac")) {
+    return "Living room wall AC";
+  }
+
+  if (key.includes("furnace")) {
+    return "Basement furnace, attic furnace";
+  }
+
+  if (key.includes("boiler")) {
+    return "Main boiler";
+  }
+
+  if (key.includes("fireplace")) {
+    return "Living room fireplace";
+  }
+
+  if (key.includes("thermostat")) {
+    return "Main thermostat, upstairs thermostat";
+  }
 
   if (key.includes("refrigerator")) {
     return "Kitchen refrigerator, basement fridge";
@@ -342,6 +432,26 @@ function getStarterNamePlaceholder(option: { category: AssetSystemCategory; name
   return getSuggestedNameExamples(option.category);
 }
 
+function getStarterDisplayName(option: AssetStarterOption) {
+  if (option.shortName) {
+    return option.shortName;
+  }
+
+  const compactNames: Record<string, string> = {
+    "dishwasher": "Dishwasher",
+    "electrical panel": "Elec panel",
+    "fireplace": "Fireplace",
+    "plumbing fixtures": "Plumbing",
+    "range or oven": "Range",
+    "refrigerator": "Fridge",
+    "smoke and safety systems": "Safety",
+    "thermostat": "Thermo",
+    "water heater": "Water heater"
+  };
+
+  return compactNames[option.name.toLowerCase()] ?? option.name;
+}
+
 function getNextStarterName(optionName: string, exactCount: number) {
   return exactCount > 0 ? `${optionName} ${exactCount + 1}` : optionName;
 }
@@ -350,23 +460,52 @@ function getPriorityStarterOptions(options: AssetStarterOption[]) {
   const priorityNames = new Set([
     "roof",
     "gutters",
-    "hvac",
+    "central ac",
+    "furnace",
+    "heat pump",
+    "mini-split",
+    "fireplace",
     "water heater",
     "refrigerator",
     "dishwasher",
     "washer",
     "dryer",
-    "deck"
+    "deck",
+    "electrical panel",
+    "plumbing",
+    "windows",
+    "thermostat"
   ]);
   const priorityOptions = options.filter((option) => priorityNames.has(option.name.toLowerCase()));
 
-  return priorityOptions.length > 0 ? priorityOptions.slice(0, 8) : options.slice(0, 6);
+  return priorityOptions.length > 0 ? priorityOptions.slice(0, 20) : options.slice(0, 20);
 }
 
 function getMoreStarterOptions(options: AssetStarterOption[], priorityOptions: AssetStarterOption[]) {
   const priorityKeys = new Set(priorityOptions.map((option) => `${option.category}:${option.name}`));
 
   return options.filter((option) => !priorityKeys.has(`${option.category}:${option.name}`));
+}
+
+function getStarterKey(option: AssetStarterOption) {
+  return `${option.category}:${option.name}`;
+}
+
+function getStarterHref(option: AssetStarterOption) {
+  const params = new URLSearchParams({
+    starter: getStarterKey(option),
+    tab: "add"
+  });
+
+  return `/dashboard?${params.toString()}`;
+}
+
+function getSelectedStarterOption(options: AssetStarterOption[], starterKey?: string) {
+  if (!starterKey) {
+    return null;
+  }
+
+  return options.find((option) => getStarterKey(option) === starterKey) ?? null;
 }
 
 function getDashboardTab(searchParams?: { inventory?: string; tab?: string }, assetCount = 0): DashboardTab {
@@ -752,7 +891,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       ) : null}
 
       {activeTab === "add" ? (
-        <GuidedAssetChecklist existingAssets={uniqueAssets.map(({ asset }) => asset)} property={firstProperty} />
+        <GuidedAssetChecklist
+          existingAssets={uniqueAssets.map(({ asset }) => asset)}
+          property={firstProperty}
+          selectedStarterKey={resolvedSearchParams?.starter}
+        />
       ) : null}
 
       {activeTab === "more" ? (
@@ -1139,16 +1282,17 @@ function AssetDetailView({
   const meta = statusMeta[summary.status];
   const Icon = meta.icon;
   const CategoryIcon = getCategoryIcon(asset.category);
-  const categoryVisual = getCategoryVisual(asset.category);
   const lastService = getServiceDisplay(asset.last_service_date, "Add service date");
   const nextCheck = getServiceDisplay(asset.next_service_due_date, "Add next check");
+  const installedText = asset.install_year ? `${asset.install_year}` : "Add install year";
+  const conditionText = formatSelectValue(asset.condition);
   const identityText =
     asset.brand || asset.model
       ? [asset.brand, asset.model].filter(Boolean).join(" ")
       : "Add brand, model, notes, and service details.";
 
   return (
-    <section className="mx-auto flex w-full max-w-4xl flex-col gap-4">
+    <section className="mx-auto flex w-full max-w-5xl flex-col gap-4">
       <Button asChild className="w-fit rounded-xl" variant="ghost" size="sm">
         <Link href="/dashboard?tab=systems">
           <ChevronRight className="h-4 w-4 rotate-180" aria-hidden="true" />
@@ -1157,68 +1301,97 @@ function AssetDetailView({
       </Button>
 
       <section className="overflow-hidden rounded-[2rem] border border-white bg-white shadow-2xl shadow-blue-100/70">
-        <div className="bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex min-w-0 gap-4">
-              <div className={`grid h-16 w-16 shrink-0 place-items-center rounded-[1.35rem] sm:h-20 sm:w-20 sm:rounded-[1.6rem] ${categoryVisual.bg} ${categoryVisual.text}`}>
-                {createElement(CategoryIcon, { className: "h-10 w-10", "aria-hidden": true })}
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-[var(--ink-soft)]">{summary.category}</p>
-                <h2 className="mt-1 text-2xl font-black tracking-tight text-[var(--foreground)] sm:text-3xl">
-                  {summary.name}
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-[var(--ink-soft)]">{identityText}</p>
-              </div>
-            </div>
-            <Badge className="w-fit shrink-0" variant={meta.badge}>{meta.label}</Badge>
-          </div>
+        <div className="relative overflow-hidden bg-gradient-to-br from-blue-700 via-[var(--brand)] to-cyan-500 p-5 text-white sm:p-6">
+          <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/15 blur-3xl" aria-hidden="true" />
+          <div className="absolute -bottom-20 left-8 h-44 w-44 rounded-full bg-cyan-200/20 blur-3xl" aria-hidden="true" />
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-3xl bg-white/85 p-4 shadow-sm">
-              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--ink-soft)]">
-                <CalendarDays className="h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
-                Next service
-              </p>
-              <p className={`mt-2 text-lg font-black ${asset.next_service_due_date ? "text-[var(--foreground)]" : "text-[var(--brand)]"}`}>
-                {nextCheck}
-              </p>
+          <div className="relative flex flex-col gap-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+              <div className="flex min-w-0 gap-3 sm:gap-4">
+                <div className="grid h-16 w-16 shrink-0 place-items-center rounded-[1.25rem] bg-white/20 text-white shadow-2xl shadow-blue-900/20 ring-1 ring-white/25 sm:h-24 sm:w-24 sm:rounded-[1.6rem]">
+                  {createElement(CategoryIcon, { className: "h-11 w-11", "aria-hidden": true })}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-white/70">Service Passport</p>
+                  <h2 className="mt-1 text-3xl font-black tracking-tight text-white sm:text-4xl">
+                    {summary.name}
+                  </h2>
+                  <p className="mt-2 text-sm font-semibold text-white/75">{summary.category}</p>
+                </div>
+              </div>
+              <Badge className="w-fit shrink-0 border-white/30 bg-white/15 text-white" variant="outline">{meta.label}</Badge>
             </div>
-            <div className="rounded-3xl bg-white/85 p-4 shadow-sm">
-              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--ink-soft)]">
-                <Wrench className="h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
-                Last service
-              </p>
-              <p className={`mt-2 text-lg font-black ${asset.last_service_date ? "text-[var(--foreground)]" : "text-[var(--brand)]"}`}>
-                {lastService}
-              </p>
+
+            <div className="rounded-[1.75rem] bg-white/15 p-4 ring-1 ring-white/20 backdrop-blur">
+              <p className="text-sm leading-6 text-white/85">{identityText}</p>
+              <p className="mt-3 text-lg font-black leading-7 text-white">{summary.nextAction}</p>
             </div>
-            <div className="rounded-3xl bg-white/85 p-4 shadow-sm">
-              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[var(--ink-soft)]">
-                <Icon className="h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
-                Status
-              </p>
-              <p className="mt-2 text-lg font-black text-[var(--foreground)]">{summary.nextAction}</p>
+
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <AssetMetricCard
+                icon={CalendarDays}
+                isMissing={!asset.next_service_due_date}
+                label="Next service"
+                value={nextCheck}
+              />
+              <AssetMetricCard
+                icon={Wrench}
+                isMissing={!asset.last_service_date}
+                label="Last service"
+                value={lastService}
+              />
+              <AssetMetricCard
+                icon={Info}
+                isMissing={!asset.install_year}
+                label="Installed"
+                value={installedText}
+              />
+              <AssetMetricCard
+                icon={Icon}
+                isMissing={asset.condition === "unknown"}
+                label="Condition"
+                value={conditionText}
+              />
             </div>
           </div>
         </div>
 
-        <div className="grid gap-4 p-4 lg:grid-cols-[0.72fr_1.28fr]">
+        <div className="grid gap-4 bg-gradient-to-br from-white to-blue-50/70 p-4 lg:grid-cols-[0.8fr_1.2fr]">
           <aside className="space-y-3">
-            <div className="rounded-3xl bg-[var(--paper-muted)] p-4">
-              <p className="text-sm font-bold text-[var(--foreground)]">What this means</p>
-              <p className="mt-2 text-sm leading-6 text-[var(--ink-soft)]">{summary.statusReason}</p>
-              <p className="mt-3 rounded-2xl bg-white px-3 py-2 text-sm text-[var(--ink-soft)]">{summary.detail}</p>
+            <div className={`rounded-[1.75rem] border p-4 ${meta.ledger}`}>
+              <p className="flex items-center gap-2 text-sm font-black">
+                <Icon className="h-4 w-4" aria-hidden="true" />
+                What this means
+              </p>
+              <p className="mt-2 text-sm leading-6">{summary.statusReason}</p>
+              <p className="mt-3 rounded-2xl bg-white/70 px-3 py-2 text-sm">{summary.detail}</p>
             </div>
-            <div className="rounded-3xl bg-[var(--paper-muted)] p-4">
-              <p className="text-sm font-bold text-[var(--foreground)]">Notes</p>
+            <div className="rounded-[1.75rem] bg-white p-4 shadow-sm ring-1 ring-blue-100">
+              <p className="text-sm font-black text-[var(--foreground)]">Notes</p>
               <p className="mt-2 text-sm leading-6 text-[var(--ink-soft)]">
                 {asset.notes || "No notes yet. Add service provider details, location hints, or anything useful below."}
               </p>
             </div>
+            <div className="rounded-[1.75rem] bg-[var(--paper-muted)] p-4">
+              <p className="text-sm font-black text-[var(--foreground)]">Record profile</p>
+              <div className="mt-3 grid gap-2 text-sm text-[var(--ink-soft)]">
+                <p className="flex justify-between gap-3">
+                  <span>Responsibility</span>
+                  <span className="font-bold text-[var(--foreground)]">{formatSelectValue(asset.ownership_responsibility)}</span>
+                </p>
+                <p className="flex justify-between gap-3">
+                  <span>Expected life</span>
+                  <span className="font-bold text-[var(--foreground)]">{asset.expected_lifespan_years ? `${asset.expected_lifespan_years} years` : "Not added"}</span>
+                </p>
+                <p className="flex justify-between gap-3">
+                  <span>Replacement</span>
+                  <span className="font-bold text-[var(--foreground)]">{asset.estimated_replacement_cost ? `$${asset.estimated_replacement_cost}` : "Not added"}</span>
+                </p>
+              </div>
+            </div>
           </aside>
 
-          <div className="rounded-3xl bg-gradient-to-br from-[var(--paper-muted)] to-white p-4">
+          <div className="rounded-[1.75rem] bg-white p-4 shadow-xl shadow-blue-100/60">
             <AssetDetailForm asset={asset} />
           </div>
         </div>
@@ -1227,10 +1400,41 @@ function AssetDetailView({
   );
 }
 
+function AssetMetricCard({
+  icon,
+  isMissing,
+  label,
+  value
+}: {
+  icon: typeof CalendarDays;
+  isMissing: boolean;
+  label: string;
+  value: string;
+}) {
+  const Icon = icon;
+
+  return (
+    <div className="rounded-[1.35rem] bg-white/92 p-3 text-[var(--foreground)] shadow-lg shadow-blue-900/10">
+      <p className="flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.12em] text-[var(--ink-soft)]">
+        <Icon className="h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
+        {label}
+      </p>
+      <p className={`mt-2 line-clamp-2 text-sm font-black leading-5 ${isMissing ? "text-[var(--brand)]" : "text-[var(--foreground)]"}`}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
 function AssetDetailForm({ asset }: { asset: AssetSystemRow }) {
   return (
     <>
-      <form action={updateAssetDetails} className="grid gap-4 sm:grid-cols-2">
+      <div className="mb-4 flex flex-col gap-1">
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--brand)]">Edit details</p>
+        <h3 className="text-2xl font-black text-[var(--foreground)]">Keep the record useful</h3>
+        <p className="text-sm leading-6 text-[var(--ink-soft)]">Add only what you know. Missing details can stay blank.</p>
+      </div>
+      <form action={updateAssetDetails} className="grid gap-3 sm:grid-cols-2">
         <input name="asset_id" type="hidden" value={asset.id} />
         <div className="rounded-2xl bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[var(--brand)] shadow-sm sm:col-span-2">
           Identity
@@ -1422,14 +1626,17 @@ function AssetDetailForm({ asset }: { asset: AssetSystemRow }) {
 
 function GuidedAssetChecklist({
   existingAssets,
-  property
+  property,
+  selectedStarterKey
 }: {
   existingAssets: AssetSystemRow[];
   property: PropertyRow;
+  selectedStarterKey?: string;
 }) {
   const options = commonAssetOptions[property.property_type];
   const priorityOptions = getPriorityStarterOptions(options);
   const moreOptions = getMoreStarterOptions(options, priorityOptions);
+  const selectedOption = getSelectedStarterOption(options, selectedStarterKey);
   const existingStarterCounts = new Map<string, number>();
 
   existingAssets.forEach((asset) => {
@@ -1438,114 +1645,163 @@ function GuidedAssetChecklist({
   });
 
   return (
-    <Card className="rounded-3xl border-white bg-white shadow-xl shadow-blue-100/60">
-      <CardHeader>
-        <Badge variant="warning" className="w-fit">Guided Add</Badge>
-        <CardTitle className="text-2xl font-black">Add a system or appliance</CardTitle>
-        <CardDescription>
-          Start with the common stuff, edit the name, and add it. The full list stays tucked away so phones do not become
-          a forever-scroll.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <section className="rounded-[2rem] bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-3 sm:p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h4 className="text-base font-black text-[var(--foreground)]">Popular picks</h4>
-              <p className="text-sm text-[var(--ink-soft)]">Rename before adding: Basement fridge, Upstairs HVAC, Back deck.</p>
+    <section className="grid gap-4 xl:grid-cols-[0.94fr_1.06fr]">
+      <Card className="order-2 rounded-3xl border-white bg-white shadow-xl shadow-blue-100/60 xl:order-1">
+        <CardHeader className="pb-3">
+          <Badge variant="warning" className="w-fit">Guided Add</Badge>
+          <CardTitle className="text-2xl font-black">Pick what you want to track</CardTitle>
+          <CardDescription>
+            Tap a home item first. Then name the exact thing in your home, like Basement fridge or Back deck.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={createSelectedAssets} className="rounded-[2rem] bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-3 sm:p-4">
+            <input name="property_id" type="hidden" value={property.id} />
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h4 className="text-base font-black text-[var(--foreground)]">Popular picks</h4>
+                <p className="text-sm text-[var(--ink-soft)]">Select everything you have. You can rename and add more later.</p>
+              </div>
+              <Badge className="shrink-0" variant="secondary">Multi-select</Badge>
             </div>
-            <Badge className="shrink-0" variant="secondary">Fast add</Badge>
-          </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {priorityOptions.map((option) => (
-              <StarterAssetCard
-                compact
-                existingStarterCounts={existingStarterCounts}
-                key={`priority-${option.category}-${option.name}`}
-                option={option}
-                propertyId={property.id}
-              />
-            ))}
-          </div>
-        </section>
+            <div className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-6 xl:grid-cols-7">
+              {priorityOptions.map((option) => (
+                <StarterCheckboxTile
+                  existingStarterCounts={existingStarterCounts}
+                  key={`priority-${option.category}-${option.name}`}
+                  option={option}
+                />
+              ))}
+            </div>
+            <Button className="mt-4 h-11 w-full rounded-2xl bg-[var(--brand)] font-black hover:bg-[var(--brand-strong)]" type="submit">
+              Add selected
+            </Button>
+          </form>
 
-        <details className="group mt-4 rounded-[2rem] border border-[var(--ledger-line)] bg-white p-3">
-          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-3xl px-2 text-sm font-black text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]">
+          <details className="group mt-4 rounded-[2rem] border border-[var(--ledger-line)] bg-white p-3">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-3xl px-2 text-sm font-black text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]">
             <span>
               More home items
               <span className="ml-2 font-medium text-[var(--ink-soft)]">({moreOptions.length})</span>
             </span>
-            <span className="rounded-full bg-[var(--paper-muted)] px-3 py-1 text-xs uppercase tracking-[0.14em] text-[var(--ink-soft)] group-open:hidden">
-              Open
-            </span>
-            <span className="hidden rounded-full bg-[var(--paper-muted)] px-3 py-1 text-xs uppercase tracking-[0.14em] text-[var(--ink-soft)] group-open:inline">
-              Close
-            </span>
-          </summary>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
-            {moreOptions.map((option) => (
-              <StarterAssetCard
-                existingStarterCounts={existingStarterCounts}
-                key={`more-${option.category}-${option.name}`}
-                option={option}
-                propertyId={property.id}
-              />
-            ))}
-          </div>
-        </details>
+              <span className="rounded-full bg-[var(--paper-muted)] px-3 py-1 text-xs uppercase tracking-[0.14em] text-[var(--ink-soft)] group-open:hidden">
+                Open
+              </span>
+              <span className="hidden rounded-full bg-[var(--paper-muted)] px-3 py-1 text-xs uppercase tracking-[0.14em] text-[var(--ink-soft)] group-open:inline">
+                Close
+              </span>
+            </summary>
+            <div className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-6 2xl:grid-cols-7">
+              {moreOptions.map((option) => (
+                <StarterObjectTile
+                  existingStarterCounts={existingStarterCounts}
+                  isSelected={selectedOption ? getStarterKey(selectedOption) === getStarterKey(option) : false}
+                  key={`more-${option.category}-${option.name}`}
+                  option={option}
+                />
+              ))}
+            </div>
+          </details>
+        </CardContent>
+      </Card>
 
-        <div className="mt-4 rounded-3xl bg-[var(--paper-muted)] p-4 text-sm leading-6 text-[var(--ink-soft)]">
-          If you have two of the same thing, tap the same starter again and rename it. The name is what people in your
-          home should recognize.
+      <div className="order-1 space-y-4 xl:sticky xl:top-5 xl:order-2 xl:self-start">
+        {selectedOption ? (
+          <StarterAddPanel
+            existingStarterCounts={existingStarterCounts}
+            option={selectedOption}
+            propertyId={property.id}
+          />
+        ) : null}
+        <div className={selectedOption ? "" : "hidden xl:block"}>
+          <CustomAssetPanel propertyId={property.id} />
         </div>
-
-        <form action={createCustomAsset} className="mt-4 rounded-3xl border border-dashed border-[var(--ledger-line)] bg-white p-4">
-          <input name="property_id" type="hidden" value={property.id} />
-          <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-            <label className="space-y-1 text-sm font-medium">
-              Add anything else
-              <input
-                className={tallFieldClassName}
-                name="name"
-                placeholder="Wine fridge, sauna, well pump, shed roof"
-              />
-            </label>
-            <label className="space-y-1 text-sm font-medium">
-              Type
-              <select
-                className={tallFieldClassName}
-                defaultValue="other"
-                name="category"
-              >
-                {assetCategoryOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <Button className="w-full rounded-xl sm:w-fit" type="submit">
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              Add item
-            </Button>
-          </div>
-          <p className="mt-3 text-xs leading-5 text-[var(--ink-soft)]">
-            Examples: {getSuggestedNameExamples("deck")}; {getSuggestedNameExamples("hvac")};{" "}
-            {getSuggestedNameExamples("appliance")}.
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+      </div>
+      <div className="order-3 xl:hidden">
+        <CustomAssetPanel propertyId={property.id} />
+      </div>
+    </section>
   );
 }
 
-function StarterAssetCard({
-  compact = false,
+function StarterCheckboxTile({
+  existingStarterCounts,
+  option
+}: {
+  existingStarterCounts: Map<string, number>;
+  option: AssetStarterOption;
+}) {
+  const optionKey = `${option.category}:${option.name.trim().toLowerCase()}`;
+  const exactCount = existingStarterCounts.get(optionKey) ?? 0;
+  const OptionIcon = getCategoryIcon(option.category);
+  const optionVisual = getCategoryVisual(option.category);
+  const inputId = `starter-check-${option.category}-${option.name.toLowerCase().replaceAll(" ", "-")}`;
+  const value = `${option.category}::${option.name}`;
+  const displayName = getStarterDisplayName(option);
+
+  return (
+    <label
+      className="group relative flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border border-white bg-white/85 p-1.5 text-center shadow-sm transition has-[:checked]:border-[var(--brand)] has-[:checked]:bg-[var(--brand)] has-[:checked]:text-white has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[var(--brand)]"
+      htmlFor={inputId}
+    >
+      <input className="peer sr-only" id={inputId} name="assets" type="checkbox" value={value} />
+      <span className={`grid h-8 w-8 place-items-center rounded-2xl transition peer-checked:bg-white/20 peer-checked:text-white ${optionVisual.bg} ${optionVisual.text}`}>
+        {createElement(OptionIcon, { className: "h-4 w-4", "aria-hidden": true })}
+      </span>
+      <span className="min-w-0 text-[0.62rem] font-black leading-3">{displayName}</span>
+      {exactCount > 0 ? (
+        <span className="absolute right-1 top-1 rounded-full bg-white px-1.5 py-0.5 text-[0.55rem] font-black uppercase tracking-wide text-[var(--ink-soft)] peer-checked:bg-white/20 peer-checked:text-white">
+          {exactCount}
+        </span>
+      ) : null}
+    </label>
+  );
+}
+
+function StarterObjectTile({
+  existingStarterCounts,
+  isSelected,
+  option
+}: {
+  existingStarterCounts: Map<string, number>;
+  isSelected: boolean;
+  option: AssetStarterOption;
+}) {
+  const optionKey = `${option.category}:${option.name.trim().toLowerCase()}`;
+  const exactCount = existingStarterCounts.get(optionKey) ?? 0;
+  const OptionIcon = getCategoryIcon(option.category);
+  const optionVisual = getCategoryVisual(option.category);
+  const displayName = getStarterDisplayName(option);
+
+  return (
+    <Link
+      className={`group flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border p-1.5 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] ${
+        isSelected
+          ? "border-[var(--brand)] bg-[var(--brand)] text-white shadow-lg shadow-blue-200/70"
+          : "border-white bg-gradient-to-br from-white to-[var(--paper-muted)] text-[var(--foreground)]"
+      }`}
+      href={getStarterHref(option)}
+    >
+      <div className="relative">
+        <span className={`grid h-8 w-8 place-items-center rounded-2xl ${isSelected ? "bg-white/20 text-white" : `${optionVisual.bg} ${optionVisual.text}`}`}>
+          {createElement(OptionIcon, { className: "h-4 w-4", "aria-hidden": true })}
+        </span>
+        {exactCount > 0 ? (
+          <span className={`absolute -right-2 -top-2 rounded-full px-1.5 py-0.5 text-[0.55rem] font-black uppercase tracking-wide ${isSelected ? "bg-white/20 text-white" : "bg-white text-[var(--ink-soft)]"}`}>
+            {exactCount}
+          </span>
+        ) : null}
+      </div>
+      <div className="min-w-0 text-[0.62rem] font-black leading-3">{displayName}</div>
+    </Link>
+  );
+}
+
+function StarterAddPanel({
   existingStarterCounts,
   option,
   propertyId
 }: {
-  compact?: boolean;
   existingStarterCounts: Map<string, number>;
   option: AssetStarterOption;
   propertyId: string;
@@ -1554,48 +1810,96 @@ function StarterAssetCard({
   const exactCount = existingStarterCounts.get(optionKey) ?? 0;
   const OptionIcon = getCategoryIcon(option.category);
   const optionVisual = getCategoryVisual(option.category);
-  const inputId = `starter-${option.category}-${option.name.toLowerCase().replaceAll(" ", "-")}-${compact ? "compact" : "full"}`;
+  const inputId = `selected-starter-${option.category}-${option.name.toLowerCase().replaceAll(" ", "-")}`;
 
   return (
-    <form
-      action={createCustomAsset}
-      className={`group flex flex-col justify-between rounded-3xl border border-white bg-gradient-to-br from-white to-[var(--paper-muted)] p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg ${
-        compact ? "min-h-40" : "min-h-48"
-      }`}
-    >
-      <input name="property_id" type="hidden" value={propertyId} />
-      <input name="category" type="hidden" value={option.category} />
-      <div className="flex items-start justify-between gap-3">
-        <span className={`grid h-11 w-11 place-items-center rounded-2xl ${optionVisual.bg} ${optionVisual.text}`}>
-          {createElement(OptionIcon, { className: "h-5 w-5", "aria-hidden": true })}
+    <Card className="overflow-hidden rounded-[2rem] border-white bg-white shadow-2xl shadow-blue-100/70">
+      <CardHeader className="bg-gradient-to-br from-blue-600 via-[var(--brand)] to-cyan-500 text-white">
+        <div className="flex items-start gap-3">
+          <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/20 text-white">
+            {createElement(OptionIcon, { className: "h-7 w-7", "aria-hidden": true })}
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-white/75">Name this item</p>
+            <CardTitle className="mt-1 text-2xl font-black text-white">{option.name}</CardTitle>
+            <CardDescription className="mt-1 text-white/80">
+              Make it specific so anyone in the home knows which one it is.
+            </CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4 p-4">
+        <form action={createCustomAsset} className="space-y-4">
+          <input name="property_id" type="hidden" value={propertyId} />
+          <input name="category" type="hidden" value={option.category} />
+          <label className="space-y-2 text-sm font-bold text-[var(--foreground)]" htmlFor={inputId}>
+            Name in your home
+            <input
+              className="h-14 w-full rounded-2xl border border-[var(--ledger-line)] bg-white px-4 text-base font-bold outline-none focus:border-[var(--brand)] focus:ring-4 focus:ring-blue-100"
+              defaultValue={getNextStarterName(option.name, exactCount)}
+              id={inputId}
+              name="name"
+              placeholder={getStarterNamePlaceholder(option)}
+            />
+          </label>
+          <div className="rounded-2xl bg-[var(--paper-muted)] p-3 text-sm leading-6 text-[var(--ink-soft)]">
+            Try names like <span className="font-semibold text-[var(--foreground)]">{getStarterNamePlaceholder(option)}</span>.
+          </div>
+          <Button className="h-12 w-full rounded-2xl bg-[var(--brand)] text-base font-black hover:bg-[var(--brand-strong)]" type="submit">
+            <Plus className="h-5 w-5" aria-hidden="true" />
+            {exactCount > 0 ? "Add another" : "Add item"}
+          </Button>
+        </form>
+        <div className={`rounded-2xl px-3 py-2 text-xs leading-5 ${optionVisual.bg} ${optionVisual.text}`}>
+          {option.description}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function CustomAssetPanel({ propertyId }: { propertyId: string }) {
+  return (
+    <details className="group rounded-[2rem] border border-dashed border-[var(--ledger-line)] bg-white p-3 shadow-lg shadow-blue-100/40">
+      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-3xl px-2 text-sm font-black text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]">
+        <span>Add something custom</span>
+        <span className="rounded-full bg-[var(--paper-muted)] px-3 py-1 text-xs uppercase tracking-[0.14em] text-[var(--ink-soft)] group-open:hidden">
+          Open
         </span>
-        {exactCount > 0 ? (
-          <Badge variant="secondary">{exactCount} added</Badge>
-        ) : (
-          <Badge variant="outline">Starter</Badge>
-        )}
-      </div>
-      <div className="mt-3">
-        <div className="text-sm font-black text-[var(--foreground)]">{option.name}</div>
-        {compact ? null : <p className="mt-1 text-sm leading-5 text-[var(--ink-soft)]">{option.description}</p>}
-      </div>
-      <div className="mt-3 grid gap-2">
-        <label className="sr-only" htmlFor={inputId}>
-          Name in your home
+        <span className="hidden rounded-full bg-[var(--paper-muted)] px-3 py-1 text-xs uppercase tracking-[0.14em] text-[var(--ink-soft)] group-open:inline">
+          Close
+        </span>
+      </summary>
+      <form action={createCustomAsset} className="mt-3 grid gap-3">
+        <input name="property_id" type="hidden" value={propertyId} />
+        <label className="space-y-1 text-sm font-medium">
+          Item name
+          <input
+            className={tallFieldClassName}
+            name="name"
+            placeholder="Wine fridge, sauna, well pump, shed roof"
+          />
         </label>
-        <input
-          className={tallFieldClassName}
-          defaultValue={getNextStarterName(option.name, exactCount)}
-          id={inputId}
-          name="name"
-          placeholder={getStarterNamePlaceholder(option)}
-        />
-        <Button className="h-10 w-full rounded-xl bg-[var(--brand)] hover:bg-[var(--brand-strong)]" type="submit">
+        <label className="space-y-1 text-sm font-medium">
+          Type
+          <select
+            className={tallFieldClassName}
+            defaultValue="other"
+            name="category"
+          >
+            {assetCategoryOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <Button className="h-11 w-full rounded-xl" type="submit">
           <Plus className="h-4 w-4" aria-hidden="true" />
-          {exactCount > 0 ? "Add another" : "Add"}
+          Add custom item
         </Button>
-      </div>
-    </form>
+      </form>
+    </details>
   );
 }
 

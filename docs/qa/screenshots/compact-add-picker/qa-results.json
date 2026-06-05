@@ -1,0 +1,15 @@
+{
+  "email": "homekeep-compact-add-1780681701013@example.com",
+  "results": [
+    {
+      "name": "compact-add-default",
+      "path": "D:\\CodexWorkspaces\\home-management-app\\docs\\qa\\screenshots\\compact-add-picker\\compact-add-default.png",
+      "checkedTileCount": 17,
+      "contentClientHeight": 644,
+      "contentScrollHeight": 944,
+      "horizontalOverflow": false,
+      "navOverlap": false,
+      "viewportHeight": 844
+    }
+  ]
+}

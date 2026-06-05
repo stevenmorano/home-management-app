@@ -164,8 +164,8 @@ Better:
 - Dryer
 - Back deck
 - Pool deck
-- Upstairs HVAC
-- Downstairs HVAC
+- Upstairs AC
+- Basement furnace
 
 Use `category` for grouping and `name` for the actual thing the homeowner recognizes.
 
@@ -175,7 +175,7 @@ Current implementation improvement:
 - Custom assets can represent multiple items in the same category by using specific names, such as "Back deck" and "Side deck."
 - The guided add flow now uses one repeatable main card grid instead of a separate "add another" section.
 - Each suggested item has an editable "Name in your home" field, so users can add "Refrigerator" as "Basement fridge" and then add another as "Kitchen fridge."
-- Repeated items should be named by location or purpose, such as "Garage refrigerator," "Butler pantry dishwasher," "Upstairs HVAC," or "Back deck."
+- Repeated items should be named by location or purpose, such as "Garage refrigerator," "Butler pantry dishwasher," "Upstairs AC," "Basement furnace," or "Back deck."
 
 ## Next Visual Target
 
@@ -282,23 +282,26 @@ Replace the current custom asset form feeling with a friendly add flow section:
   - Range or oven
   - Washer
   - Dryer
-  - HVAC system
+  - Central AC
+  - Heat pump
+  - Mini-split
+  - Furnace
   - Water heater
   - Deck
   - Roof
   - Custom item
 
-For repeated categories, the UI should teach naming directly on the same card:
+For first setup, the UI should let users select many household objects quickly from compact icon tiles. For repeated categories, the UI should still teach naming immediately after item selection:
 
 - "Back deck"
 - "Front deck"
-- "Upstairs HVAC"
-- "Downstairs HVAC"
+- "Upstairs AC"
+- "Basement furnace"
 - "Basement water heater"
 
 Do not require users to understand `category`. The UI can still save category behind the scenes.
 
-Implementation status: implemented for the dashboard add flow. The guided add area now uses a compressed mobile flow with Popular picks first, editable default names, repeatable add actions, an expandable "More home items" section, and a compact custom-add form. The separate "Add another common item" section was removed to reduce mobile length and confusion. A fuller add-item drawer/page can come later.
+Implementation status: implemented for the dashboard add flow. The guided add area now uses a compact mobile-first multi-select grid for first setup: users can select many household objects at once, including specific heating/cooling items like Central AC, Heat pump, Mini-split, Furnace, Fireplace, Thermostat, and Water heater instead of one vague HVAC choice. More home items stays expandable. Repeated same-type assets are still supported through the focused "Name this item" panel, and custom item creation stays compact below the picker. The older visible mini-form grid was removed to reduce mobile length and confusion.
 
 ### 4. Asset Detail Surface
 
@@ -311,7 +314,7 @@ Asset details should live in a focused Systems detail view instead of expanding 
 
 Long-term target is a dedicated asset route or app drawer like the HVAC Details screen in the mockup. The current web version uses `/dashboard?tab=systems&asset=<id>` to keep the detail surface focused while preserving the tab shell.
 
-Implementation status: started. Systems rows are now tappable summary cards, and selected assets open a focused detail/edit surface with header, service cards, notes, status explanation, edit fields, and typed delete confirmation.
+Implementation status: implemented and polished once. Systems rows are now tappable summary cards, and selected assets open a focused detail/edit surface with a premium Service Passport hero, status badge, service metric cards, notes, status explanation, record profile, edit fields, and typed delete confirmation.
 
 ### 5. Mobile And Tablet Expectations
 
@@ -320,7 +323,7 @@ Implementation status: started. Systems rows are now tappable summary cards, and
 - Primary sections are Home, Systems, Add, and More.
 - Home should be a short one-page summary: greeting, home health, next maintenance, quick actions, and a compact systems preview.
 - Systems owns the full editable inventory list.
-- Add owns the compressed guided repeatable add flow.
+- Add owns the compact multi-select starter flow plus focused repeat/custom naming.
 - More owns account/property utility surfaces.
 - Main columns should not crowd each other.
 - Quick actions should be thumb-friendly.
@@ -334,7 +337,7 @@ Implementation status: implemented and polished once. The dashboard now supports
 The pass is successful when:
 
 - Status colors are obvious again.
-- A non-technical user can tell how to add a refrigerator, second deck, or upstairs HVAC.
+- A non-technical user can tell how to add a refrigerator, second deck, upstairs AC, or basement furnace.
 - Asset rows feel like home objects, not database records.
 - Missing info states feel helpful, not broken.
 - The dashboard feels closer to the supplied concept mockup while staying real and data-backed.
@@ -355,12 +358,12 @@ Implemented in the first HomeKeep Modern Care pass:
 - Compact systems preview on Home.
 - Focused asset detail/edit view from the Systems tab.
 - Mobile polish for the bottom nav, Home Health card, Systems rows, and Asset Detail header wrapping.
+- Compact multi-select Add picker with focused naming panel for repeats/custom names.
 - Authenticated mobile screenshot QA evidence in `docs/qa/mobile-visual-qa.md`.
 
 Still pending:
 
-- Deeper Add flow redesign so a phone user taps a household object first, then edits the suggested name in a smaller focused surface.
-- Further detail-screen polish, including stronger image/object treatments and a more compact edit mode.
+- Further detail-screen polish, including stronger real/generated object imagery when image assets are intentionally in scope.
 - Real photos/uploads when storage is implemented.
 
 ## Differentiation Callout
