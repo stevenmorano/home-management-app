@@ -8,7 +8,7 @@ This document captures the intended architecture shape for the MVP and the curre
 - Conventional enough to become SaaS-ready later.
 - Strong private user data boundaries.
 - Good support for file uploads and Google Calendar sync.
-- Responsive web UI optimized for iPad/tablet, with phone and desktop support.
+- Mobile-first responsive web UI with phone support as the primary constraint, while still scaling to tablet and desktop.
 
 ## Recommended Shape
 
@@ -33,9 +33,10 @@ flowchart LR
 The frontend should prioritize:
 
 - Dashboard-first experience.
-- Responsive tablet layout.
+- Focused mobile app sections instead of one long dashboard on phones.
+- Responsive tablet and desktop layouts.
 - Visual status cards.
-- Guided onboarding checklist.
+- Guided starter add flow for home inventory.
 - Structured forms with dropdowns, date pickers, year selectors, and currency inputs.
 - Optional upload controls that do not dominate onboarding.
 
@@ -52,10 +53,14 @@ Implemented so far:
 - Local shadcn/ui-style primitives for buttons, badges, and cards.
 - Typed placeholder domain models in `src/types/home.ts`.
 - Dashboard status metadata for Good, Due Soon, Needs Attention, and Missing Info.
-- Guided asset/system checklist for properties with no assets.
+- Guided asset/system starter flow for properties with no assets.
 - Data-backed visual asset/system rows for created inventory records.
-- Reopenable inventory checklist with existing asset detection.
-- Inline asset detail forms backed by server actions.
+- Reopenable Add flow with repeatable starter cards, editable default names, Popular picks, and expandable More home items.
+- Mobile-first dashboard tabs for Home, Systems, Add, and More.
+- Phone bottom navigation with desktop segmented navigation.
+- Focused Systems detail view at `/dashboard?tab=systems&asset=<id>`.
+- Focused asset detail forms backed by server actions.
+- Authenticated mobile screenshot QA for Home, Add, Systems, and Asset Detail.
 
 Dashboard property context and asset/system rows are backed by Supabase.
 
@@ -90,15 +95,15 @@ Implemented:
 - Placeholder generated-style types in `src/types/database.ts`.
 - First-property setup server action in `src/app/dashboard/actions.ts`.
 - Dashboard query for the signed-in user's first property.
-- Guided asset checklist write action in `src/app/dashboard/actions.ts`.
+- Guided starter asset write path in `src/app/dashboard/actions.ts`.
 - Asset detail update action in `src/app/dashboard/actions.ts`.
 - Dashboard query for the active property's asset systems.
 - Custom asset/system creation from the inventory panel.
-- Inline maintenance interval and next-service-due-date editing.
-- Inline asset identity, lifecycle, replacement-cost, and ownership-responsibility editing.
+- Focused detail editing for maintenance interval and next-service-due-date.
+- Focused detail editing for asset identity, lifecycle, replacement-cost, and ownership-responsibility.
 - Typed-confirmation asset/system removal.
 - Dashboard status calculation based on missing detail state, condition, and due dates.
-- First HomeKeep Modern Care dashboard UI pass with a home health score card, upcoming maintenance list, quick actions, visual home-system rows, and expandable edit sections.
+- First HomeKeep Modern Care dashboard UI pass with a home health score card, upcoming maintenance list, quick actions, visual home-system rows, focused asset detail views, and first mobile polish pass.
 - `npm run verify:supabase` confirms the initial tables are reachable.
 - A test Supabase user/property write path has been verified through RLS.
 - A test asset-system write path has been verified through RLS.

@@ -8,6 +8,7 @@ This folder contains the planning and design documentation for the Home Manageme
 - [UI Design Direction](ui-design-direction.md): first visual direction for the dashboard and asset-detail experience.
 - [Product Requirements](product-requirements.md): MVP requirements, user stories, success signals, and scope boundaries.
 - [UX Flows](ux-flows.md): onboarding, dashboard, asset, work history, and reminder flows.
+- [Mobile Visual QA](qa/mobile-visual-qa.md): authenticated mobile screenshot QA notes, polish results, and current visual follow-up.
 - [Data Model](data-model.md): planned entities, relationships, and enum values.
 - [Initial Database Schema](database-schema.md): current Supabase migration, tables, enums, and RLS policy shape.
 - [Tech Stack Decision](tech-stack.md): recommended languages, frameworks, backend, deployment, and future iOS path.

@@ -28,17 +28,19 @@ Current starter app surface:
 - Protected HomeKeep Modern Care dashboard at `/dashboard`
 - Email/password auth page at `/login`
 - First-property setup form for authenticated users with no properties
+- Mobile-first dashboard shell with Home, Systems, Add, and More sections
 - Guided add flow for authenticated users with a property
 - Reopenable Add item flow for properties that already have assets
-- Repeatable add cards for another refrigerator, dishwasher, HVAC system, deck, water heater, or custom item
+- Repeatable add cards with editable names for another refrigerator, dishwasher, HVAC system, deck, water heater, or custom item
 - Data-backed visual asset/system rows after assets are created
-- Expanded asset detail editing for brand, model, serial number, install year, estimated age, condition, last service date, next due date, maintenance interval, expected lifespan, replacement cost, ownership responsibility, and notes
+- Focused asset detail editing for brand, model, serial number, install year, estimated age, condition, last service date, next due date, maintenance interval, expected lifespan, replacement cost, ownership responsibility, and notes
 - Typed asset removal confirmation
 - Property header and switcher placeholder
 - Home health score card and status counts: Good, Due Soon, Needs Attention, Missing Info
 - Asset/system rows with structured status metadata and friendly missing-info prompts
 - Quick Add actions for Add item, Note, Maintenance, and Photo. Only Add item is currently wired.
 - Upcoming maintenance list derived from due-soon and needs-attention assets
+- Authenticated mobile screenshot QA artifacts under `docs/qa/screenshots/`
 
 Current verified Supabase state:
 
@@ -50,6 +52,8 @@ Current verified Supabase state:
 - A test asset detail update was created successfully through the anon key and RLS.
 - Duplicate asset insertion is blocked by the database unique index.
 - Multiple same-type assets are supported when each item has a distinct category/name pair, such as `appliance:Garage refrigerator` and `appliance:Kitchen refrigerator`.
+- Authenticated mobile visual QA has been captured for Home, Add, Systems, and Asset Detail.
+- The first mobile polish pass confirms no bottom-nav overlap and no horizontal overflow on the tested 390 x 844 mobile viewport.
 
 ## Local Setup
 
@@ -114,6 +118,15 @@ npm run lint
 npm run build
 ```
 
+Latest verified handoff checks:
+
+```text
+2026-06-05: npm run lint passed
+2026-06-05: npm run build passed
+2026-06-05: npm run verify:supabase passed
+2026-06-05: authenticated mobile screenshot QA passed for bottom-nav overlap and horizontal overflow
+```
+
 For dev-server verification, confirm the local app returns HTTP 200 and renders the dashboard shell.
 
 With no Supabase environment configured, verify:
@@ -128,9 +141,15 @@ With Supabase configured and the migration applied, verify:
 - A signed-in user with no property sees the first-property setup form.
 - Creating a property redirects back to `/dashboard`.
 - `/dashboard` shows the created property name and location metadata.
-- Re-selecting an existing checklist asset should not create another visible card.
-- Add item reopens the guided add flow and marks existing starter items as Already added.
-- Adding a repeated item with a specific name should create a separate asset row.
+- Re-adding an exact same starter name should not create another visible card.
+- Add item reopens the compressed guided add flow with Popular picks, expandable More home items, repeatable starter cards, and editable default names.
+- Adding the same starter type again with a specific name should create a separate asset row.
+- `/dashboard` defaults to a short Home view after inventory exists.
+- `/dashboard?tab=systems` shows the full inventory.
+- `/dashboard?tab=systems&asset=<id>` shows the selected asset detail/edit view.
+- `/dashboard?tab=add` shows the guided repeatable add flow.
+- `/dashboard?tab=more` shows property/account utility surfaces.
+- `/dashboard?inventory=1` remains supported and opens the Add view.
 - Saving asset details updates status and keeps ownership scoped to the signed-in user.
 - Removing an asset requires typing `REMOVE`.
 
@@ -147,19 +166,19 @@ Test Property 1780544589781
 Testville, NY
 ```
 
-Current asset checklist test account:
+Current asset starter-flow test account:
 
 ```text
 home-management-assets-test-1780545480211@gmail.com
 ```
 
-Current asset checklist test property:
+Current asset starter-flow test property:
 
 ```text
 Asset Checklist Test 1780545480211
 ```
 
-Current asset checklist test assets:
+Current asset starter-flow test assets:
 
 ```text
 HVAC

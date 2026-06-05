@@ -83,8 +83,8 @@ Then verify:
 4. Confirm a signed-in user with no properties sees the first-property setup form.
 5. Create a property.
 6. Confirm the dashboard shows that property in the header.
-7. Add checklist assets.
-8. Confirm Add item reopens the guided add flow and existing starter items are marked Already added.
+7. Add starter assets.
+8. Confirm Add item reopens the guided add flow and starter items can be renamed and added again from Popular picks or More home items.
 9. Add a repeated same-type item with a specific name, such as Garage refrigerator or Upstairs HVAC.
 10. Save asset details, including service dates, maintenance interval, replacement planning, and notes.
 11. Remove an asset only after typing `REMOVE`.

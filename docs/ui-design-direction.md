@@ -173,7 +173,8 @@ Current implementation improvement:
 
 - Checklist appliance suggestions now create individual appliance records instead of one generic "Major appliances" record.
 - Custom assets can represent multiple items in the same category by using specific names, such as "Back deck" and "Side deck."
-- The guided add flow includes repeatable item cards for another refrigerator, dishwasher, HVAC system, deck, water heater, or custom item.
+- The guided add flow now uses one repeatable main card grid instead of a separate "add another" section.
+- Each suggested item has an editable "Name in your home" field, so users can add "Refrigerator" as "Basement fridge" and then add another as "Kitchen fridge."
 - Repeated items should be named by location or purpose, such as "Garage refrigerator," "Butler pantry dishwasher," "Upstairs HVAC," or "Back deck."
 
 ## Next Visual Target
@@ -287,7 +288,7 @@ Replace the current custom asset form feeling with a friendly add flow section:
   - Roof
   - Custom item
 
-For repeated categories, the UI should teach naming:
+For repeated categories, the UI should teach naming directly on the same card:
 
 - "Back deck"
 - "Front deck"
@@ -297,28 +298,36 @@ For repeated categories, the UI should teach naming:
 
 Do not require users to understand `category`. The UI can still save category behind the scenes.
 
-Implementation status: implemented for the dashboard add flow. The guided add area now uses visual object cards, individual appliance suggestions, repeatable item cards, and examples for repeated systems. A fuller add-item drawer/page can come later.
+Implementation status: implemented for the dashboard add flow. The guided add area now uses a compressed mobile flow with Popular picks first, editable default names, repeatable add actions, an expandable "More home items" section, and a compact custom-add form. The separate "Add another common item" section was removed to reduce mobile length and confusion. A fuller add-item drawer/page can come later.
 
 ### 4. Asset Detail Surface
 
-Keep the current expandable record as a bridge, but make it feel like a detail panel:
+Asset details should live in a focused Systems detail view instead of expanding long forms inside every list row:
 
 - Header with icon, asset name, location/name hint, and status.
 - Group fields into friendly sections.
-- Use softer cards inside the expanded area.
+- Use softer cards around service dates, notes, status meaning, and edit fields.
 - Delete/remove should be visually secondary and clearly dangerous.
 
-Long-term target is a dedicated asset detail page or drawer like the HVAC Details screen in the mockup, but this pass can improve the expanded section first.
+Long-term target is a dedicated asset route or app drawer like the HVAC Details screen in the mockup. The current web version uses `/dashboard?tab=systems&asset=<id>` to keep the detail surface focused while preserving the tab shell.
 
-Implementation status: implemented as a friendlier expanded detail panel. Dedicated asset detail pages/drawers remain pending.
+Implementation status: started. Systems rows are now tappable summary cards, and selected assets open a focused detail/edit surface with header, service cards, notes, status explanation, edit fields, and typed delete confirmation.
 
 ### 5. Mobile And Tablet Expectations
 
 - Dashboard should feel mobile-first even on desktop.
+- Phone layout should use focused app sections instead of one long page.
+- Primary sections are Home, Systems, Add, and More.
+- Home should be a short one-page summary: greeting, home health, next maintenance, quick actions, and a compact systems preview.
+- Systems owns the full editable inventory list.
+- Add owns the compressed guided repeatable add flow.
+- More owns account/property utility surfaces.
 - Main columns should not crowd each other.
 - Quick actions should be thumb-friendly.
 - Expanded editor fields should stack cleanly.
 - No text should truncate important household object names unless the row still makes sense.
+
+Implementation status: implemented and polished once. The dashboard now supports `tab=home`, `tab=systems`, `tab=add`, and `tab=more`, keeps `inventory=1` as a compatibility route to Add, and shows a bottom navigation on phones with a segmented nav on larger screens. The phone shell keeps bottom navigation out of the content flow, scrolls dashboard content vertically, and suppresses horizontal drift.
 
 ### 6. Acceptance Criteria
 
@@ -341,12 +350,17 @@ Implemented in the first HomeKeep Modern Care pass:
 - Quick actions.
 - Visual home systems list.
 - Specific appliance checklist suggestions.
-- Existing asset editor remains available behind expandable records.
+- Mobile-first Home, Systems, Add, and More dashboard sections.
+- Bottom navigation on phone.
+- Compact systems preview on Home.
+- Focused asset detail/edit view from the Systems tab.
+- Mobile polish for the bottom nav, Home Health card, Systems rows, and Asset Detail header wrapping.
+- Authenticated mobile screenshot QA evidence in `docs/qa/mobile-visual-qa.md`.
 
 Still pending:
 
-- Authenticated screenshot QA with real seeded data.
-- Detail pages or drawers for asset details.
+- Deeper Add flow redesign so a phone user taps a household object first, then edits the suggested name in a smaller focused surface.
+- Further detail-screen polish, including stronger image/object treatments and a more compact edit mode.
 - Real photos/uploads when storage is implemented.
 
 ## Differentiation Callout

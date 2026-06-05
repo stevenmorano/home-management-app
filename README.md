@@ -12,14 +12,20 @@ Current app surfaces:
 
 - `/login`: email/password sign in and sign up.
 - `/dashboard`: protected property dashboard.
+- `/dashboard?tab=home`: mobile-first Home summary.
+- `/dashboard?tab=systems`: full inventory and selected asset detail views.
+- `/dashboard?tab=add`: compressed repeatable add flow.
+- `/dashboard?tab=more`: property/account utility view.
 - First-property setup for authenticated users with no properties.
 - HomeKeep Modern Care dashboard with a home health score, upcoming maintenance, quick actions, and visual home-system rows.
 - Guided add flow for starter systems/assets based on property type.
-- Repeatable add cards for another refrigerator, dishwasher, HVAC system, deck, water heater, or custom item.
+- Mobile-first dashboard sections for Home, Systems, Add, and More.
+- Compressed repeatable add flow with editable names for another refrigerator, dishwasher, HVAC system, deck, water heater, or custom item.
 - Data-backed asset/system rows after checklist or custom creation.
-- Reopenable Add item flow with already-added starter items labeled.
-- Expanded asset detail editing for identity, age, maintenance, planning, responsibility, and notes.
+- Reopenable Add item flow with repeatable starter cards and added-count labels.
+- Focused asset detail editing for identity, age, maintenance, planning, responsibility, and notes.
 - Typed asset removal confirmation.
+- Authenticated mobile visual QA evidence for Home, Add, Systems, and Asset Detail in `docs/qa/mobile-visual-qa.md`.
 
 The first target is a family-and-friends pilot for homeowners who currently track little or nothing about their home maintenance.
 
@@ -69,6 +75,7 @@ npm run verify:supabase
 - [UI Design Direction](docs/ui-design-direction.md)
 - [Product Requirements](docs/product-requirements.md)
 - [UX Flows](docs/ux-flows.md)
+- [Mobile Visual QA](docs/qa/mobile-visual-qa.md)
 - [Data Model](docs/data-model.md)
 - [Initial Database Schema](docs/database-schema.md)
 - [Tech Stack Decision](docs/tech-stack.md)

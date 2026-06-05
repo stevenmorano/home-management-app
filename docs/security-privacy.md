@@ -32,7 +32,7 @@ The app may store sensitive homeowner data, including:
 - Initial RLS-protected property creation has been verified with a test user.
 - Initial RLS-protected asset-system creation has been verified with a test user.
 - Initial RLS-protected asset-system detail updates have been verified with a test user.
-- Asset-system custom creation, expanded detail updates, and removal use ownership checks through the parent property.
+- Asset-system custom creation, detail updates, and removal use ownership checks through the parent property.
 - Duplicate asset rows are prevented by ownership-scoped application checks and a property-scoped unique index migration.
 - Multiple same-type assets are allowed when each item has a distinct name; exact duplicates are blocked per property by category and normalized name.
 - No storage buckets, uploads, or Google OAuth token handling have been implemented yet.

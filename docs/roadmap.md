@@ -34,12 +34,13 @@
 
 - Status groups: Good, Due Soon, Needs Attention, Missing Info. Data-backed counts and status reasons implemented.
 - HomeKeep Modern Care visual dashboard. First pass complete.
-- HomeCare Glass refinement. Implemented for richer system rows, missing-info prompts, repeatable add-item UX, and friendlier expanded detail panels.
-- Asset rows. Data-backed visual system rows implemented with icon tiles, last service, next check, status, and expandable details.
+- HomeCare Glass refinement. Implemented for richer system rows, missing-info prompts, compressed repeatable add-item UX, and friendlier detail surfaces.
+- Mobile-first dashboard shell. Implemented with Home, Systems, Add, and More sections plus phone bottom navigation.
+- Asset rows. Data-backed visual system rows implemented with icon tiles, last service, next check, status, and links to focused detail views.
 - Upcoming maintenance. Data-backed from due-soon/needs-attention asset status.
 - Overdue items.
 - Recently completed work.
-- Premium tablet-friendly layout. Started; authenticated screenshot QA with real seeded data still pending.
+- Premium mobile/tablet layout. Authenticated mobile screenshot QA and first polish pass complete; next refinement is a more focused Add flow that avoids showing many mini-forms at once.
 
 ## Phase 4: Work History And Contractors
 

@@ -12,7 +12,7 @@
 
 ## Assumptions
 
-- The product starts as a web app, optimized especially for iPad/tablet use, while still supporting phone and desktop layouts.
+- The product starts as a web app, now optimized mobile-first because pilot users are most likely to try it on phones, while still supporting tablet and desktop layouts.
 - The app supports multiple properties, but the first onboarding flow starts with one primary property.
 - In-app reminders and Google Calendar sync are part of the MVP direction.
 - Authentication and private user-owned data are required.
@@ -46,7 +46,7 @@ The primary user loop is:
 
 1. Add property.
 2. Select property type.
-3. Choose common systems/assets from a guided checklist.
+3. Add common systems/assets from a guided, repeatable add flow.
 4. Fill in what is known using structured inputs.
 5. See the home health dashboard.
 6. Receive reminders and calendar events for maintenance or review.
@@ -65,7 +65,9 @@ First-run onboarding begins by asking for property type:
 - Vacation home
 - Other
 
-The selected property type controls the suggested checklist. For a single-family house, the checklist may include roof, gutters, HVAC, furnace/boiler, water heater, plumbing, electrical panel, major appliances, chimney, foundation, windows, deck, driveway, sump pump, septic/sewer, irrigation, pool, and garage systems. For a condo or apartment, the checklist should de-emphasize roof/foundation and emphasize appliances, HVAC units, water heater if owned, electrical panel, fixtures, smoke detectors, windows, and maintenance responsibilities.
+The selected property type controls the suggested asset list. For a single-family house, the list may include roof, gutters, HVAC, furnace/boiler, water heater, plumbing, electrical panel, individual appliances, chimney, foundation, windows, deck, driveway, sump pump, septic/sewer, irrigation, pool, and garage systems. For a condo or apartment, the list should de-emphasize roof/foundation and emphasize appliances, HVAC units, water heater if owned, electrical panel, fixtures, smoke detectors, windows, and maintenance responsibilities.
+
+Repeated assets should be added from the same main flow by editing the default name, for example changing Refrigerator to Basement fridge, then adding another Refrigerator as Kitchen fridge.
 
 Users should be able to add an item with minimal data, but the data should remain structured. Instead of typing vague notes like "maybe around 2001," the app should offer fields such as:
 
@@ -144,6 +146,8 @@ Documents and photos are optional attachments for properties, assets, rooms, wor
 The dashboard should feel premium, calm, and visual. It should avoid feeling like a spreadsheet or corporate task board.
 
 The accepted visual direction is HomeKeep Modern Care, documented in `docs/ui-design-direction.md`. It frames the dashboard as a bright, premium, consumer home-care app with strong status colors and visual system rows.
+
+The current implemented dashboard uses mobile-first sections: Home, Systems, Add, and More. Home is a short summary, Systems owns the full inventory and focused asset detail view, Add owns repeatable item creation, and More holds property/account utilities.
 
 The recommended dashboard groups are:
 

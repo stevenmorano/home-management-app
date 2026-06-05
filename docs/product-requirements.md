@@ -42,6 +42,7 @@ The MVP is not primarily a chore app. It is a home inventory, maintenance, remin
 - The app presents a broad checklist of common systems/assets based on property type.
 - Users can select known items, skip unknown items, and return later.
 - Users can add custom assets/systems.
+- Users can add individual appliance records rather than one vague "major appliances" record.
 - Users can add multiple same-type items by giving each item a specific name, such as Garage refrigerator, Butler pantry dishwasher, Upstairs HVAC, or Back deck.
 
 ### Assets And Systems
@@ -54,6 +55,7 @@ The MVP is not primarily a chore app. It is a home inventory, maintenance, remin
 ### Dashboard
 
 - Users see a visual property health dashboard.
+- Dashboard navigation is mobile-first, with focused Home, Systems, Add, and More sections instead of one long phone page.
 - Dashboard status groups are Good, Due Soon, Needs Attention, and Missing Info.
 - Dashboard surfaces upcoming maintenance, overdue items, expensive future items, recently completed work, and missing details.
 - Current dashboard direction is HomeKeep Modern Care with a home health score, upcoming maintenance, quick actions, and visual home-system rows.

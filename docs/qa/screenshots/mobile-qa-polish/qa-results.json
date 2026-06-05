@@ -1,0 +1,61 @@
+{
+  "email": "homekeep-polish-qa-1780632147840@example.com",
+  "results": [
+    {
+      "name": "home",
+      "path": "D:\\CodexWorkspaces\\home-management-app\\docs\\qa\\screenshots\\mobile-qa-polish\\home.png",
+      "url": "http://localhost:3000/dashboard?tab=home",
+      "viewportHeight": 844,
+      "scrollHeight": 844,
+      "contentClientHeight": 644,
+      "contentScrollHeight": 1501,
+      "bodyText": "Open menu\n\nHomeKeep\n\nNotifications\nCurrent section: home\n\nTestville, NY\n\nGood morning, Homekeep\n\nHere is what is happening with Mobile QA Home.\n\nAdd item\n\n58\n\n/100\n\nHome Health\n\nSome systems need attention now.\n\n0 good, 0 due soon, 0 need attention, 5 missing info.\n\n0\n\nGOOD\n\n0\n\nDUE SOON\n\n0\n\nATTENTION\n\n5\n\nMISSING\n\nUpcoming Maintenance\nView all\n\nNo upcoming maintenance yet. Add service dates to start building the calendar.\n\nQuick Add\nAdd item\nNote\nMaintenance\nPhoto\n\nHome Systems\n\nYour main records\nView all\nMain roof\nAdd age, service date, condition, or notes\nMissing Info\nUpstairs HVAC\nAdd age, service date, condition, or notes\nMissing Info\nBasement water heater\nAdd age, service date, condition, or notes\nMissing Info\nKitchen fridge\nAdd age, service date, condition, or notes\nMissing Info\nBack deck\nAdd age, service date, condition, or notes\nMissing Info\nHome\nSystems\nAdd\nMore",
+      "bottomNavVisible": true,
+      "bottomNavTop": 766,
+      "bottomNavOverlapsContent": false,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "add",
+      "path": "D:\\CodexWorkspaces\\home-management-app\\docs\\qa\\screenshots\\mobile-qa-polish\\add.png",
+      "url": "http://localhost:3000/dashboard?tab=add",
+      "viewportHeight": 844,
+      "scrollHeight": 1964,
+      "contentClientHeight": 644,
+      "contentScrollHeight": 2532,
+      "bodyText": "Open menu\n\nHomeKeep\n\nNotifications\nCurrent section: add\nGuided Add\nAdd a system or appliance\n\nStart with the common stuff, edit the name, and add it. The full list stays tucked away so phones do not become a forever-scroll.\n\nPopular picks\n\nRename before adding: Basement fridge, Upstairs HVAC, Back deck.\n\nFast add\nStarter\nRoof\nName in your home\nAdd\nStarter\nGutters\nName in your home\nAdd\nStarter\nHVAC\nName in your home\nAdd\nStarter\nWater heater\nName in your home\nAdd\nStarter\nDeck\nName in your home\nAdd\nStarter\nRefrigerator\nName in your home\nAdd\nStarter\nDishwasher\nName in your home\nAdd\nStarter\nWasher\nName in your home\nAdd\nMore home items(8)\nOPEN\nIf you have two of the same thing, tap the same starter again and rename it. The name is what people in your home should recognize.\nAdd anything else\nType\nRoof\nHVAC\nFurnace\nBoiler\nWater heater\nAppliance\nElectrical\nPlumbing\nGutters\nWindows\nChimney\nFoundation\nDeck\nDriveway\nPool\nSump pump\nSeptic or sewer\nIrrigation\nGarage\nSecurity\nOther\nAdd item\n\nExamples: Back deck, front porch, pool deck; Upstairs HVAC, downstairs HVAC; Kitchen refrigerator, washer, dryer.\n\nHome\nSystems\nAdd\nMore",
+      "bottomNavVisible": true,
+      "bottomNavTop": 766,
+      "bottomNavOverlapsContent": false,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "systems",
+      "path": "D:\\CodexWorkspaces\\home-management-app\\docs\\qa\\screenshots\\mobile-qa-polish\\systems.png",
+      "url": "http://localhost:3000/dashboard?tab=systems",
+      "viewportHeight": 844,
+      "scrollHeight": 844,
+      "contentClientHeight": 644,
+      "contentScrollHeight": 1250,
+      "bodyText": "Open menu\n\nHomeKeep\n\nNotifications\nCurrent section: systems\n\nAll Systems\n\nHome Systems\nAll Systems\nBy Location\nMain roof\nMissing Info\n\nRoof\n\nLast service\n\nAdd service date\n\nNext check\n\nAdd next check\n\nAdd age, service date, condition, or notes\n\nUpstairs HVAC\nMissing Info\n\nHvac\n\nLast service\n\nAdd service date\n\nNext check\n\nAdd next check\n\nAdd age, service date, condition, or notes\n\nBasement water heater\nMissing Info\n\nWater Heater\n\nLast service\n\nAdd service date\n\nNext check\n\nAdd next check\n\nAdd age, service date, condition, or notes\n\nKitchen fridge\nMissing Info\n\nAppliance\n\nLast service\n\nAdd service date\n\nNext check\n\nAdd next check\n\nAdd age, service date, condition, or notes\n\nBack deck\nMissing Info\n\nDeck\n\nLast service\n\nAdd service date\n\nNext check\n\nAdd next check\n\nAdd age, service date, condition, or notes\n\nHome\nSystems\nAdd\nMore",
+      "bottomNavVisible": true,
+      "bottomNavTop": 766,
+      "bottomNavOverlapsContent": false,
+      "horizontalOverflow": false
+    },
+    {
+      "name": "asset-detail",
+      "path": "D:\\CodexWorkspaces\\home-management-app\\docs\\qa\\screenshots\\mobile-qa-polish\\asset-detail.png",
+      "url": "http://localhost:3000/dashboard?tab=systems&asset=9c49874d-da8b-4b56-a052-02a14c04a911",
+      "viewportHeight": 844,
+      "scrollHeight": 844,
+      "contentClientHeight": 644,
+      "contentScrollHeight": 2387,
+      "bodyText": "Open menu\n\nHomeKeep\n\nNotifications\nCurrent section: systems\nBack to systems\n\nRoof\n\nMain roof\n\nAdd brand, model, notes, and service details.\n\nMissing Info\n\nNEXT SERVICE\n\nAdd next check\n\nLAST SERVICE\n\nAdd service date\n\nSTATUS\n\nAdd age, service date, condition, or notes\n\nWhat this means\n\nAdd one or two details to make this record useful.\n\nKey details still missing\n\nNotes\n\nNo notes yet. Add service provider details, location hints, or anything useful below.\n\nIDENTITY\nBrand\nModel\nSerial number\nAGE AND MAINTENANCE\nInstall year\nLast service\nNext due\nEstimated age\nUnknown\n0-3 years\n4-7 years\n8-12 years\n13-20 years\n20+ years\nCondition\nUnknown\nExcellent\nGood\nFair\nPoor\nInterval value\nInterval unit\nNo interval\nDays\nWeeks\nMonths\nYears\nPLANNING\nExpected lifespan\nReplacement cost\nRESPONSIBILITY AND NOTES\nResponsibility\nOwner\nHOA\nLandlord\nTenant\nShared\nUnknown\nNotes\nSave details\nType REMOVE to delete this asset\nRemove asset\nHome\nSystems\nAdd\nMore",
+      "bottomNavVisible": true,
+      "bottomNavTop": 766,
+      "bottomNavOverlapsContent": false,
+      "horizontalOverflow": false
+    }
+  ]
+}
