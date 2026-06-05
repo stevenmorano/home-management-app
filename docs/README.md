@@ -5,6 +5,7 @@ This folder contains the planning and design documentation for the Home Manageme
 ## Core Docs
 
 - [Product Design](product-design.md): accepted brainstorming output and product direction.
+- [UI Design Direction](ui-design-direction.md): first visual direction for the dashboard and asset-detail experience.
 - [Product Requirements](product-requirements.md): MVP requirements, user stories, success signals, and scope boundaries.
 - [UX Flows](ux-flows.md): onboarding, dashboard, asset, work history, and reminder flows.
 - [Data Model](data-model.md): planned entities, relationships, and enum values.

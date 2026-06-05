@@ -2,23 +2,24 @@
 
 A homeowner-focused web app for tracking major home systems, maintenance, work history, reminders, contractors, and records.
 
-The product is designed as a **Property Health Command Center**: users can open the app and quickly see what in their home is good, what needs attention soon, what information is missing, and what may become costly.
+The product is currently shaped as **HomeKeep Modern Care**: a bright, visual home-care dashboard where users can see home health, upcoming maintenance, important systems, missing details, and quick add actions.
 
 ## Current Stage
 
-This project has a protected Next.js web prototype with Supabase connected.
-Authentication, the initial RLS-backed schema, and the first-property flow have been verified against the Supabase project.
+This project has a protected Next.js web prototype with Supabase connected. Authentication, the initial RLS-backed schema, duplicate asset prevention, first-property setup, and asset/system CRUD flows have been verified against the Supabase project.
 
 Current app surfaces:
 
 - `/login`: email/password sign in and sign up.
 - `/dashboard`: protected property dashboard.
 - First-property setup for authenticated users with no properties.
-- Data-backed dashboard property header after a property is created.
-- Guided asset/system checklist for properties with no assets.
-- Data-backed asset/system dashboard cards after checklist creation.
-- Reopenable “Add more systems” checklist with already-added items disabled.
-- Inline asset detail editing for age, condition, service date, and notes.
+- HomeKeep Modern Care dashboard with a home health score, upcoming maintenance, quick actions, and visual home-system rows.
+- Guided add flow for starter systems/assets based on property type.
+- Repeatable add cards for another refrigerator, dishwasher, HVAC system, deck, water heater, or custom item.
+- Data-backed asset/system rows after checklist or custom creation.
+- Reopenable Add item flow with already-added starter items labeled.
+- Expanded asset detail editing for identity, age, maintenance, planning, responsibility, and notes.
+- Typed asset removal confirmation.
 
 The first target is a family-and-friends pilot for homeowners who currently track little or nothing about their home maintenance.
 
@@ -40,8 +41,7 @@ npm install
 npm run dev
 ```
 
-Copy `.env.example` to `.env.local` and fill in Supabase and Google OAuth values when those services are created.
-Supabase values are required for the current auth and first-property flow.
+Copy `.env.example` to `.env.local` and fill in Supabase values. Supabase values are required for the current auth, first-property, and asset flows. Google OAuth values are planned for later calendar work.
 
 Useful checks:
 
@@ -56,7 +56,8 @@ npm run verify:supabase
 - Add one or more properties.
 - Select property type, such as house, condo, apartment, rental, or vacation home.
 - Build a guided inventory of major systems/assets.
-- Track install/replacement years, service dates, age ranges, condition, costs, contractors, and work history.
+- Track install/replacement years, service dates, age ranges, condition, expected lifespan, replacement cost, brand/model/serial, ownership responsibility, and notes.
+- Add multiple same-type items with specific names, such as Garage refrigerator, Butler pantry dishwasher, Upstairs HVAC, or Back deck.
 - See a visual dashboard with Good, Due Soon, Needs Attention, and Missing Info.
 - Get in-app reminders and sync selected maintenance events to Google Calendar.
 - Optionally upload documents, receipts, warranties, manuals, and photos.
@@ -65,6 +66,7 @@ npm run verify:supabase
 
 - [Product Design](docs/product-design.md)
 - [Documentation Index](docs/README.md)
+- [UI Design Direction](docs/ui-design-direction.md)
 - [Product Requirements](docs/product-requirements.md)
 - [UX Flows](docs/ux-flows.md)
 - [Data Model](docs/data-model.md)

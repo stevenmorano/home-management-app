@@ -10,7 +10,7 @@ Project scaffold and authentication foundation are complete for the first protec
 - Next.js, React, TypeScript, Tailwind, and shadcn/ui-style component foundation are in place.
 - Supabase client packages and placeholder client/server helpers are installed.
 - `.env.example` documents planned Supabase and Google Calendar variables.
-- Protected dashboard shell reflects the Property Health Command Center direction.
+- Protected dashboard shell now reflects the HomeKeep Modern Care direction.
 - Supabase auth foundation is implemented with email/password forms, session refresh middleware, auth callback handling, and sign out.
 - Initial Supabase schema migration is implemented for profiles, properties, rooms, and asset systems.
 - RLS policies are included in the initial migration.
@@ -28,15 +28,26 @@ Project scaffold and authentication foundation are complete for the first protec
 - A test user/property/assets write path was created successfully through RLS.
 - Duplicate checklist submissions are guarded in app code, collapsed in the dashboard, and covered by the applied database uniqueness migration.
 - The database unique index has been verified by attempting a duplicate insert and receiving constraint error `23505`.
-- Add more systems reopens the guided checklist after assets exist.
+- Add item reopens the guided add flow after assets exist.
 - Already-added checklist items are disabled and labeled.
 - Inline asset detail editing is implemented for install year, estimated age, condition, last service date, and notes.
+- Custom asset/system creation is implemented from the dashboard inventory panel.
+- Inline asset detail editing now also supports maintenance interval value, maintenance interval unit, and next service due date.
+- Inline asset detail editing now supports brand, model, serial number, expected lifespan, estimated replacement cost, and ownership responsibility.
+- Asset removal is implemented with explicit typed confirmation.
+- Dashboard status calculation now considers useful details, condition, next service due date, and due-soon timing while keeping empty records as Missing Info.
+- The earlier Quiet Ledger dashboard direction was replaced after visual review because it felt too old-school and muted.
+- The first HomeKeep Modern Care UI pass is implemented: bright modern app palette, HomeKeep-style header, home health score card, upcoming maintenance list, quick actions, visual home-system rows, expandable asset editing, and typed delete confirmation.
+- Checklist appliance suggestions now create individual appliance records instead of one generic Major appliances record.
+- The guided add flow supports multiple same-type items through repeatable cards and specific names, such as Garage refrigerator, Butler pantry dishwasher, Upstairs HVAC, and Back deck.
 - Asset detail updates are ownership-checked through the parent property.
+- Custom asset creation, asset detail updates, and asset removal are ownership-checked through the parent property.
 - Asset detail update flow has been verified against Supabase with a temporary test user/property/asset.
 - `npm run lint` and `npm run build` pass.
+- `npm run verify:supabase` passes against the configured Supabase project.
 - Local app verification confirms `/login` renders without the setup warning and unauthenticated `/dashboard` redirects to `/login`.
 
-The next implementation milestone is richer asset CRUD and dashboard status calculation, including custom assets, due dates, maintenance intervals, and replacement planning.
+The next implementation milestone is authenticated visual QA with real seeded data, then a decision between a dedicated asset detail page/drawer and starting work history records.
 
 ## Build Order
 
@@ -46,9 +57,9 @@ The next implementation milestone is richer asset CRUD and dashboard status calc
 4. Property creation and switching. First-property creation complete; multi-property switching pending.
 5. Property type onboarding.
 6. Guided asset/system checklist. Complete for initial creation.
-7. Asset/system CRUD. Create from checklist and basic detail editing complete; custom assets/delete/full edit pending.
-8. Dashboard status calculation. Basic status counts and simple detail-based status updates complete; richer due/attention logic pending.
-9. Home health dashboard UI. Data-backed shell complete; polish and detail flows pending.
+7. Asset/system CRUD. Create from checklist, custom asset creation, expanded detail editing, and removal are complete; detail UX polish pending.
+8. Dashboard status calculation. Data-backed status counts now consider condition and due dates; status explanation/polish pending.
+9. Home health dashboard UI. HomeKeep Modern Care and HomeCare Glass passes complete; authenticated screenshot QA pending.
 10. Work records.
 11. Contractors.
 12. Reminders.

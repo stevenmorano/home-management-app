@@ -53,11 +53,11 @@ Implemented so far:
 - Typed placeholder domain models in `src/types/home.ts`.
 - Dashboard status metadata for Good, Due Soon, Needs Attention, and Missing Info.
 - Guided asset/system checklist for properties with no assets.
-- Data-backed asset/system cards for created inventory records.
+- Data-backed visual asset/system rows for created inventory records.
 - Reopenable inventory checklist with existing asset detection.
 - Inline asset detail forms backed by server actions.
 
-Dashboard property context and asset/system cards are backed by Supabase.
+Dashboard property context and asset/system rows are backed by Supabase.
 
 ## Backend
 
@@ -93,6 +93,12 @@ Implemented:
 - Guided asset checklist write action in `src/app/dashboard/actions.ts`.
 - Asset detail update action in `src/app/dashboard/actions.ts`.
 - Dashboard query for the active property's asset systems.
+- Custom asset/system creation from the inventory panel.
+- Inline maintenance interval and next-service-due-date editing.
+- Inline asset identity, lifecycle, replacement-cost, and ownership-responsibility editing.
+- Typed-confirmation asset/system removal.
+- Dashboard status calculation based on missing detail state, condition, and due dates.
+- First HomeKeep Modern Care dashboard UI pass with a home health score card, upcoming maintenance list, quick actions, visual home-system rows, and expandable edit sections.
 - `npm run verify:supabase` confirms the initial tables are reachable.
 - A test Supabase user/property write path has been verified through RLS.
 - A test asset-system write path has been verified through RLS.

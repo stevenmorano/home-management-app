@@ -143,6 +143,8 @@ Documents and photos are optional attachments for properties, assets, rooms, wor
 
 The dashboard should feel premium, calm, and visual. It should avoid feeling like a spreadsheet or corporate task board.
 
+The accepted visual direction is HomeKeep Modern Care, documented in `docs/ui-design-direction.md`. It frames the dashboard as a bright, premium, consumer home-care app with strong status colors and visual system rows.
+
 The recommended dashboard groups are:
 
 - Good: items with known info and no upcoming maintenance concerns.

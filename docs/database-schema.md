@@ -31,6 +31,8 @@ Current verification status:
 - Test property creation through RLS succeeded.
 - Test asset-system creation through RLS succeeded.
 - Test asset-system detail update through RLS succeeded.
+- Custom asset-system creation uses the same property ownership check before insert.
+- Asset-system removal uses an ownership-checked asset lookup before delete.
 - Duplicate asset/system creation is prevented in app code and should also be enforced by the follow-up unique index migration.
 - Duplicate asset/system insertion was tested and blocked by constraint error `23505`.
 
@@ -120,8 +122,19 @@ Key columns:
 - `created_at`
 - `updated_at`
 
-Asset dashboard cards now read from `asset_systems`. The current UI creates starter records from the guided checklist and uses Missing Info defaults for incomplete details.
-The dashboard can update basic detail fields directly on `asset_systems`: `install_year`, `estimated_age_range`, `condition`, `last_service_date`, `notes`, and `status`.
+Asset dashboard rows now read from `asset_systems`. The current UI creates starter records from the guided add flow, supports custom/repeatable asset creation, and uses Missing Info defaults for incomplete details.
+The dashboard can update detail fields directly on `asset_systems`: `brand`, `model`, `serial_number`, `install_year`, `estimated_age_range`, `condition`, `last_service_date`, `maintenance_interval_value`, `maintenance_interval_unit`, `next_service_due_date`, `expected_lifespan_years`, `estimated_replacement_cost`, `ownership_responsibility`, `notes`, and `status`.
+The dashboard can remove asset rows after typed `REMOVE` confirmation. Deletes remain protected by the `asset_systems` RLS policy and an app-level ownership check through the parent property.
+
+Status calculation:
+
+- Empty records with no useful details remain `missing_info`. Default ownership responsibility alone does not count as a useful detail.
+- Brand, model, serial number, expected lifespan, estimated replacement cost, age, service, interval, due-date, condition, and notes can move an asset out of `missing_info`.
+- `condition = poor` marks an asset `needs_attention`.
+- A past `next_service_due_date` marks an asset `needs_attention`.
+- A `next_service_due_date` within 30 days marks an asset `due_soon`.
+- `condition = fair` marks an asset `due_soon`.
+- Otherwise, assets with useful details are `good`.
 
 Duplicate guard:
 

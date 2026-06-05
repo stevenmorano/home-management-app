@@ -23,5 +23,6 @@ export interface AssetSummary {
   status: AssetStatus;
   detail: string;
   nextAction: string;
+  statusReason: string;
   duplicateCount?: number;
 }

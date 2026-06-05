@@ -23,19 +23,23 @@
 ## Phase 2: Guided Inventory MVP
 
 - Property type onboarding. Started through first-property setup.
-- Guided asset checklist by property type. Initial version complete.
-- Structured asset entry. Minimum useful asset creation and basic detail editing complete.
-- Missing info status. Default Missing Info creation complete.
+- Guided asset checklist by property type. Complete for the current prototype.
+- Custom asset/system creation. Complete for the current prototype.
+- Repeatable same-type item creation. Complete through specific-name add cards for another refrigerator, dishwasher, HVAC system, deck, water heater, or custom item.
+- Structured asset entry. Expanded editing complete for identity, age, condition, service dates, next due date, maintenance interval, expected lifespan, replacement cost, ownership responsibility, and notes.
+- Missing info status. Default Missing Info creation and richer useful-detail status logic complete.
 - Multi-property switcher. Pending.
 
 ## Phase 3: Home Health Dashboard
 
-- Status groups: Good, Due Soon, Needs Attention, Missing Info. Basic counts implemented.
-- Asset tiles. Data-backed cards with basic inline editing implemented.
-- Upcoming maintenance. Placeholder only.
+- Status groups: Good, Due Soon, Needs Attention, Missing Info. Data-backed counts and status reasons implemented.
+- HomeKeep Modern Care visual dashboard. First pass complete.
+- HomeCare Glass refinement. Implemented for richer system rows, missing-info prompts, repeatable add-item UX, and friendlier expanded detail panels.
+- Asset rows. Data-backed visual system rows implemented with icon tiles, last service, next check, status, and expandable details.
+- Upcoming maintenance. Data-backed from due-soon/needs-attention asset status.
 - Overdue items.
 - Recently completed work.
-- Premium tablet-friendly layout.
+- Premium tablet-friendly layout. Started; authenticated screenshot QA with real seeded data still pending.
 
 ## Phase 4: Work History And Contractors
 

@@ -25,18 +25,20 @@ The web app is scaffolded with:
 
 Current starter app surface:
 
-- Protected property health dashboard shell at `/dashboard`
+- Protected HomeKeep Modern Care dashboard at `/dashboard`
 - Email/password auth page at `/login`
 - First-property setup form for authenticated users with no properties
-- Guided asset/system checklist for authenticated users with a property but no assets
-- Reopenable Add more systems checklist for properties that already have assets
-- Data-backed asset/system cards after assets are created
-- Inline asset detail editing for install year, estimated age, condition, last service date, and notes
+- Guided add flow for authenticated users with a property
+- Reopenable Add item flow for properties that already have assets
+- Repeatable add cards for another refrigerator, dishwasher, HVAC system, deck, water heater, or custom item
+- Data-backed visual asset/system rows after assets are created
+- Expanded asset detail editing for brand, model, serial number, install year, estimated age, condition, last service date, next due date, maintenance interval, expected lifespan, replacement cost, ownership responsibility, and notes
+- Typed asset removal confirmation
 - Property header and switcher placeholder
-- Status summary groups: Good, Due Soon, Needs Attention, Missing Info
-- Asset/system cards with structured status metadata
-- Guided setup checklist placeholder
-- Upcoming work/reminders placeholder
+- Home health score card and status counts: Good, Due Soon, Needs Attention, Missing Info
+- Asset/system rows with structured status metadata and friendly missing-info prompts
+- Quick Add actions for Add item, Note, Maintenance, and Photo. Only Add item is currently wired.
+- Upcoming maintenance list derived from due-soon and needs-attention assets
 
 Current verified Supabase state:
 
@@ -47,6 +49,7 @@ Current verified Supabase state:
 - A test property asset inventory was created successfully through the anon key and RLS.
 - A test asset detail update was created successfully through the anon key and RLS.
 - Duplicate asset insertion is blocked by the database unique index.
+- Multiple same-type assets are supported when each item has a distinct category/name pair, such as `appliance:Garage refrigerator` and `appliance:Kitchen refrigerator`.
 
 ## Local Setup
 
@@ -126,8 +129,10 @@ With Supabase configured and the migration applied, verify:
 - Creating a property redirects back to `/dashboard`.
 - `/dashboard` shows the created property name and location metadata.
 - Re-selecting an existing checklist asset should not create another visible card.
-- Add more systems reopens the checklist and marks existing items as Already added.
+- Add item reopens the guided add flow and marks existing starter items as Already added.
+- Adding a repeated item with a specific name should create a separate asset row.
 - Saving asset details updates status and keeps ownership scoped to the signed-in user.
+- Removing an asset requires typing `REMOVE`.
 
 Current test account created during verification:
 

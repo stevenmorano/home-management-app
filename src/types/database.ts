@@ -277,3 +277,6 @@ export type PropertyType = Database["public"]["Enums"]["property_type"];
 export type AssetSystemRow = Database["public"]["Tables"]["asset_systems"]["Row"];
 export type AssetSystemInsert = Database["public"]["Tables"]["asset_systems"]["Insert"];
 export type AssetSystemCategory = Database["public"]["Enums"]["asset_system_category"];
+export type AssetStatus = Database["public"]["Enums"]["asset_status"];
+export type MaintenanceIntervalUnit = Database["public"]["Enums"]["maintenance_interval_unit"];
+export type OwnershipResponsibility = Database["public"]["Enums"]["ownership_responsibility"];

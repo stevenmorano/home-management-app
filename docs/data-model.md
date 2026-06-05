@@ -76,8 +76,8 @@ erDiagram
 - id
 - property_id
 - room_id nullable
-- name
-- category
+- name: user-facing recognizable item name, such as Refrigerator, Garage refrigerator, Upstairs HVAC, or Back deck
+- category: structured grouping such as appliance, hvac, deck, roof, or water_heater
 - brand
 - model
 - serial_number
@@ -96,6 +96,12 @@ erDiagram
 - notes
 - created_at
 - updated_at
+
+Current duplicate rule:
+
+- Multiple same-type assets are allowed when they have distinct names.
+- Exact duplicates are blocked per property by `category + normalized name`.
+- Examples that can coexist: `appliance:Kitchen refrigerator`, `appliance:Garage refrigerator`, `deck:Back deck`, `deck:Pool deck`.
 
 ## WorkRecord
 

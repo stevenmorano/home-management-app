@@ -10,7 +10,7 @@ The local project is currently connected to Supabase:
 - The initial schema migration and duplicate-prevention migration have been applied.
 - `npm run verify:supabase` passes.
 - A test user and test property were created successfully through the authenticated/RLS write path.
-- Test asset creation, duplicate prevention, and asset detail updates have been verified through authenticated/RLS write paths.
+- Test asset creation, custom asset creation, duplicate prevention, asset detail updates, and asset removal have been verified through authenticated/RLS-safe write paths or the same app ownership-check patterns.
 
 ## 1. Create `.env.local`
 
@@ -84,10 +84,12 @@ Then verify:
 5. Create a property.
 6. Confirm the dashboard shows that property in the header.
 7. Add checklist assets.
-8. Confirm Add more systems reopens the checklist and existing items are marked Already added.
-9. Save basic asset details.
-10. Sign out.
-11. Confirm `/dashboard` redirects back to `/login`.
+8. Confirm Add item reopens the guided add flow and existing starter items are marked Already added.
+9. Add a repeated same-type item with a specific name, such as Garage refrigerator or Upstairs HVAC.
+10. Save asset details, including service dates, maintenance interval, replacement planning, and notes.
+11. Remove an asset only after typing `REMOVE`.
+12. Sign out.
+13. Confirm `/dashboard` redirects back to `/login`.
 
 Current verified test account:
 

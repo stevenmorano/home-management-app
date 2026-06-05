@@ -4,7 +4,14 @@ import { redirect } from "next/navigation";
 
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { AssetSystemCategory, AssetSystemInsert, PropertyType } from "@/types/database";
+import type {
+  AssetStatus,
+  AssetSystemCategory,
+  AssetSystemInsert,
+  MaintenanceIntervalUnit,
+  OwnershipResponsibility,
+  PropertyType
+} from "@/types/database";
 
 const propertyTypes = [
   "single_family_house",
@@ -51,6 +58,15 @@ const estimatedAgeRanges = [
 ] as const;
 
 const assetConditions = ["excellent", "good", "fair", "poor", "unknown"] as const;
+const maintenanceIntervalUnits = ["days", "weeks", "months", "years"] satisfies MaintenanceIntervalUnit[];
+const ownershipResponsibilities = [
+  "owner",
+  "hoa",
+  "landlord",
+  "tenant",
+  "shared",
+  "unknown"
+] satisfies OwnershipResponsibility[];
 
 function optionalText(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
@@ -71,6 +87,23 @@ function optionalPositiveInteger(value: FormDataEntryValue | null) {
   }
 
   return parsed;
+}
+
+function optionalNonNegativeNumber(value: FormDataEntryValue | null) {
+  const text = String(value ?? "").trim();
+
+  if (!text) {
+    return null;
+  }
+
+  const normalized = text.replaceAll(",", "");
+  const parsed = Number.parseFloat(normalized);
+
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return null;
+  }
+
+  return Math.round(parsed * 100) / 100;
 }
 
 function optionalYear(value: FormDataEntryValue | null) {
@@ -95,6 +128,16 @@ function optionalDate(value: FormDataEntryValue | null) {
   }
 
   return text;
+}
+
+function parseAssetCategory(value: FormDataEntryValue | null): AssetSystemCategory {
+  const candidate = String(value ?? "");
+
+  if (assetCategories.includes(candidate as AssetSystemCategory)) {
+    return candidate as AssetSystemCategory;
+  }
+
+  return "other";
 }
 
 function parsePropertyType(value: FormDataEntryValue | null): PropertyType {
@@ -132,6 +175,110 @@ function parseAssetCondition(value: FormDataEntryValue | null) {
   return assetConditions.includes(candidate as (typeof assetConditions)[number])
     ? (candidate as (typeof assetConditions)[number])
     : "unknown";
+}
+
+function parseMaintenanceIntervalUnit(value: FormDataEntryValue | null) {
+  const candidate = String(value ?? "");
+  return maintenanceIntervalUnits.includes(candidate as MaintenanceIntervalUnit)
+    ? (candidate as MaintenanceIntervalUnit)
+    : null;
+}
+
+function parseOwnershipResponsibility(value: FormDataEntryValue | null): OwnershipResponsibility {
+  const candidate = String(value ?? "");
+  return ownershipResponsibilities.includes(candidate as OwnershipResponsibility)
+    ? (candidate as OwnershipResponsibility)
+    : "owner";
+}
+
+function daysUntil(dateText: string) {
+  const today = new Date();
+  const dueDate = new Date(`${dateText}T00:00:00`);
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  return Math.ceil((dueDate.getTime() - todayStart.getTime()) / 86_400_000);
+}
+
+function calculateAssetStatus({
+  condition,
+  estimatedAgeRange,
+  estimatedReplacementCost,
+  expectedLifespanYears,
+  identificationDetails,
+  installYear,
+  lastServiceDate,
+  maintenanceIntervalUnit,
+  maintenanceIntervalValue,
+  nextServiceDueDate,
+  notes
+}: {
+  condition: (typeof assetConditions)[number];
+  estimatedAgeRange: (typeof estimatedAgeRanges)[number];
+  estimatedReplacementCost: number | null;
+  expectedLifespanYears: number | null;
+  identificationDetails: string[];
+  installYear: number | null;
+  lastServiceDate: string | null;
+  maintenanceIntervalUnit: MaintenanceIntervalUnit | null;
+  maintenanceIntervalValue: number | null;
+  nextServiceDueDate: string | null;
+  notes: string | null;
+}): AssetStatus {
+  const hasUsefulDetails = Boolean(
+    installYear ||
+      lastServiceDate ||
+      nextServiceDueDate ||
+      notes ||
+      expectedLifespanYears ||
+      estimatedReplacementCost !== null ||
+      identificationDetails.some(Boolean) ||
+      maintenanceIntervalValue ||
+      maintenanceIntervalUnit ||
+      estimatedAgeRange !== "unknown" ||
+      condition !== "unknown"
+  );
+
+  if (!hasUsefulDetails) {
+    return "missing_info";
+  }
+
+  if (condition === "poor") {
+    return "needs_attention";
+  }
+
+  if (nextServiceDueDate) {
+    const dueInDays = daysUntil(nextServiceDueDate);
+
+    if (dueInDays < 0) {
+      return "needs_attention";
+    }
+
+    if (dueInDays <= 30) {
+      return "due_soon";
+    }
+  }
+
+  if (condition === "fair") {
+    return "due_soon";
+  }
+
+  return "good";
+}
+
+async function requireOwnedProperty(propertyId: string, userId: string) {
+  const supabase = await createClient();
+  const { data: property, error } = await supabase
+    .from("properties")
+    .select("id")
+    .eq("id", propertyId)
+    .eq("user_id", userId)
+    .single();
+
+  if (error || !property) {
+    redirect("/dashboard?message=Property%20not%20found");
+  }
+
+  return { property, supabase };
 }
 
 export async function createFirstProperty(formData: FormData) {
@@ -175,7 +322,6 @@ export async function createFirstProperty(formData: FormData) {
 
 export async function createSelectedAssets(formData: FormData) {
   const user = await requireUser();
-  const supabase = await createClient();
   const propertyId = optionalText(formData.get("property_id"));
   const selectedAssets = formData
     .getAll("assets")
@@ -190,16 +336,7 @@ export async function createSelectedAssets(formData: FormData) {
     redirect("/dashboard?message=Select%20at%20least%20one%20asset%20or%20system");
   }
 
-  const { data: property, error: propertyError } = await supabase
-    .from("properties")
-    .select("id")
-    .eq("id", propertyId)
-    .eq("user_id", user.id)
-    .single();
-
-  if (propertyError || !property) {
-    redirect("/dashboard?message=Property%20not%20found");
-  }
+  const { property, supabase } = await requireOwnedProperty(propertyId, user.id);
 
   const uniqueAssets = Array.from(
     new Map(selectedAssets.map((asset) => [`${asset.category}:${asset.name}`, asset])).values()
@@ -254,6 +391,47 @@ export async function createSelectedAssets(formData: FormData) {
   redirect("/dashboard");
 }
 
+export async function createCustomAsset(formData: FormData) {
+  const user = await requireUser();
+  const propertyId = optionalText(formData.get("property_id"));
+  const name = optionalText(formData.get("name"));
+  const category = parseAssetCategory(formData.get("category"));
+
+  if (!propertyId) {
+    redirect("/dashboard?message=Property%20is%20required");
+  }
+
+  if (!name) {
+    redirect("/dashboard?inventory=1&message=Asset%20name%20is%20required");
+  }
+
+  const { property, supabase } = await requireOwnedProperty(propertyId, user.id);
+
+  const { error } = await supabase.from("asset_systems").insert({
+    property_id: property.id,
+    name,
+    category,
+    condition: "unknown",
+    estimated_age_range: "unknown",
+    status: "missing_info",
+    ownership_responsibility: "owner"
+  });
+
+  if (error) {
+    if (error.code === "23505") {
+      redirect("/dashboard?inventory=1&message=That%20asset%20already%20exists%20for%20this%20property");
+    }
+
+    const params = new URLSearchParams({
+      inventory: "1",
+      message: `Could not create custom asset: ${error.message}`
+    });
+    redirect(`/dashboard?${params.toString()}`);
+  }
+
+  redirect("/dashboard?message=Custom%20asset%20created");
+}
+
 export async function updateAssetDetails(formData: FormData) {
   const user = await requireUser();
   const supabase = await createClient();
@@ -276,21 +454,50 @@ export async function updateAssetDetails(formData: FormData) {
 
   const condition = parseAssetCondition(formData.get("condition"));
   const estimatedAgeRange = parseEstimatedAgeRange(formData.get("estimated_age_range"));
+  const brand = optionalText(formData.get("brand"));
+  const model = optionalText(formData.get("model"));
+  const serialNumber = optionalText(formData.get("serial_number"));
   const installYear = optionalYear(formData.get("install_year"));
   const lastServiceDate = optionalDate(formData.get("last_service_date"));
+  const parsedMaintenanceIntervalValue = optionalPositiveInteger(formData.get("maintenance_interval_value"));
+  const parsedMaintenanceIntervalUnit = parseMaintenanceIntervalUnit(formData.get("maintenance_interval_unit"));
+  const maintenanceIntervalValue = parsedMaintenanceIntervalUnit ? parsedMaintenanceIntervalValue : null;
+  const maintenanceIntervalUnit = maintenanceIntervalValue ? parsedMaintenanceIntervalUnit : null;
+  const nextServiceDueDate = optionalDate(formData.get("next_service_due_date"));
+  const expectedLifespanYears = optionalPositiveInteger(formData.get("expected_lifespan_years"));
+  const estimatedReplacementCost = optionalNonNegativeNumber(formData.get("estimated_replacement_cost"));
+  const ownershipResponsibility = parseOwnershipResponsibility(formData.get("ownership_responsibility"));
   const notes = optionalText(formData.get("notes"));
-  const hasUsefulDetails = Boolean(
-    installYear || lastServiceDate || notes || estimatedAgeRange !== "unknown" || condition !== "unknown"
-  );
-  const status = !hasUsefulDetails ? "missing_info" : condition === "poor" ? "needs_attention" : "good";
+  const status = calculateAssetStatus({
+    condition,
+    estimatedAgeRange,
+    estimatedReplacementCost,
+    expectedLifespanYears,
+    identificationDetails: [brand, model, serialNumber].filter((detail): detail is string => Boolean(detail)),
+    installYear,
+    lastServiceDate,
+    maintenanceIntervalUnit,
+    maintenanceIntervalValue,
+    nextServiceDueDate,
+    notes
+  });
 
   const { error } = await supabase
     .from("asset_systems")
     .update({
+      brand,
+      model,
+      serial_number: serialNumber,
       install_year: installYear,
       estimated_age_range: estimatedAgeRange,
       condition,
       last_service_date: lastServiceDate,
+      maintenance_interval_value: maintenanceIntervalValue,
+      maintenance_interval_unit: maintenanceIntervalValue ? maintenanceIntervalUnit : null,
+      next_service_due_date: nextServiceDueDate,
+      expected_lifespan_years: expectedLifespanYears,
+      estimated_replacement_cost: estimatedReplacementCost,
+      ownership_responsibility: ownershipResponsibility,
       notes,
       status
     })
@@ -304,4 +511,41 @@ export async function updateAssetDetails(formData: FormData) {
   }
 
   redirect("/dashboard?message=Asset%20details%20saved");
+}
+
+export async function deleteAsset(formData: FormData) {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const assetId = optionalText(formData.get("asset_id"));
+  const confirmed = optionalText(formData.get("confirm_delete")) === "REMOVE";
+
+  if (!assetId) {
+    redirect("/dashboard?message=Asset%20is%20required");
+  }
+
+  if (!confirmed) {
+    redirect("/dashboard?message=Type%20REMOVE%20before%20deleting%20an%20asset");
+  }
+
+  const { data: asset, error: assetError } = await supabase
+    .from("asset_systems")
+    .select("id, property_id, properties!inner(user_id)")
+    .eq("id", assetId)
+    .eq("properties.user_id", user.id)
+    .single();
+
+  if (assetError || !asset) {
+    redirect("/dashboard?message=Asset%20not%20found");
+  }
+
+  const { error } = await supabase.from("asset_systems").delete().eq("id", asset.id);
+
+  if (error) {
+    const params = new URLSearchParams({
+      message: `Could not remove asset: ${error.message}`
+    });
+    redirect(`/dashboard?${params.toString()}`);
+  }
+
+  redirect("/dashboard?message=Asset%20removed");
 }
