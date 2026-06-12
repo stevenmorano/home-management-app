@@ -60,19 +60,19 @@ Project scaffold and authentication foundation are complete for the first protec
 - Add picker visual QA confirms no bottom-nav overlap and no horizontal overflow for the compact multi-select picker, default picker, and selected Refrigerator naming panel.
 - Asset detail passport visual QA confirms no bottom-nav overlap and no horizontal overflow for the selected asset detail screen.
 
-The next implementation milestone is a true second-step review wizard for selected items: choose quantities, customize names, and then create records.
+The selected-item review wizard is implemented. The next core implementation milestone is likely rooms/locations so assets can be organized by Kitchen, Basement, Garage, Exterior, Laundry, and similar household places.
 
 ## Build Order
 
 1. Project scaffold. Complete.
 2. Authentication. Foundation complete; password reset and provider-specific polish pending.
 3. Database schema. Initial profiles/properties/rooms/asset systems migration complete.
-4. Property creation and switching. First-property creation complete; multi-property switching pending.
+4. Property creation and switching. First-property creation, adding another property from More, URL-scoped multi-property switching, and active-property detail editing are complete.
 5. Property type onboarding.
 6. Guided asset/system starter flow. Complete for initial creation and repeatable named additions.
 7. Asset/system CRUD. Create from starter cards, custom asset creation, focused detail editing, and removal are complete; detail UX polish is in progress.
 8. Dashboard status calculation. Data-backed status counts now consider condition and due dates; status explanation/polish pending.
-9. Home health dashboard UI. HomeKeep Modern Care, HomeCare Glass, mobile-first tab shell, compact multi-select Add picker, focused Service Passport asset detail, authenticated mobile screenshot QA, and first mobile QA polish are complete; selected-item review wizard is pending.
+9. Home health dashboard UI. HomeKeep Modern Care, HomeCare Glass, mobile-first tab shell, compact multi-select Add picker, selected-item review wizard, focused Service Passport asset detail, authenticated mobile screenshot QA, and first mobile QA polish are complete.
 10. Work records.
 11. Contractors.
 12. Reminders.

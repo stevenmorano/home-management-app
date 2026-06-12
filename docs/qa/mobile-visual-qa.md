@@ -4,6 +4,8 @@ Date: 2026-06-05
 
 Scope: authenticated mobile visual QA for the Home, Add, Systems, and Asset Detail dashboard sections after the mobile-first tab shell, focused asset detail view, compressed Add flow, mobile polish passes, and Add object-picker redesign.
 
+Update on 2026-06-11: the selected-item Add review step was implemented, and mobile screenshot QA was attempted at 390 x 844. The screenshot run could not complete because throwaway sign-up now requires Supabase email confirmation and the documented historical test accounts did not accept the available QA password convention. `npm run lint`, `npm run build`, and `npm run verify:supabase` passed. Re-run authenticated screenshot QA after confirming a usable test account or disabling confirmation for local pilot QA.
+
 Viewport used: 390 x 844, touch/mobile context.
 
 Screenshots:
@@ -43,7 +45,8 @@ Passes:
 - Home Health stacks on phone with readable status rows.
 - Systems rows are more compact and rely on the detail view for the fuller explanation/edit surface.
 - Asset detail header wraps names instead of truncating important household labels.
-- Add flow now uses compact multi-select object tiles for first setup and a focused naming panel for repeats/custom names instead of showing many editable mini-forms at once.
+- Add flow now uses compact multi-select object tiles for first setup and a selected-item review step for quantities and repeat/custom names instead of showing many editable mini-forms at once.
+- Add flow now uses compact multi-select object tiles followed by a selected-item review step for quantity and specific household names before bulk creation.
 - Asset Detail now uses a premium Service Passport hero with status, service metrics, status explanation, notes, record profile, and compact edit area.
 
 Initial measured scroll height:
@@ -104,4 +107,4 @@ Priority 3:
 
 ## Recommended Next Fix
 
-The immediate mobile QA fixes, compact Add picker redesign, and first Asset Detail passport polish are complete. The next Add milestone is a true second-step review wizard for quantities and custom names before creating records.
+The immediate mobile QA fixes, compact Add picker redesign, first Asset Detail passport polish, and selected-item review wizard are complete. Authenticated screenshot QA for the newest Add review and property-management surfaces should be re-run once a usable confirmed QA account is available.

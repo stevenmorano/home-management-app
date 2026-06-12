@@ -25,10 +25,10 @@
 - Property type onboarding. Started through first-property setup.
 - Guided asset checklist by property type. Complete for the current prototype.
 - Custom asset/system creation. Complete for the current prototype.
-- Repeatable same-type item creation. Complete through compact multi-select starter items plus a focused naming panel for another refrigerator, dishwasher, heating/cooling item, deck, water heater, or custom item.
+- Repeatable same-type item creation. Complete through compact multi-select starter items plus selected-item review for quantities and names, including another refrigerator, dishwasher, heating/cooling item, deck, water heater, or custom item.
 - Structured asset entry. Focused detail editing complete for identity, age, condition, service dates, next due date, maintenance interval, expected lifespan, replacement cost, ownership responsibility, and notes.
 - Missing info status. Default Missing Info creation and richer useful-detail status logic complete.
-- Multi-property switcher. Pending.
+- Multi-property switcher. Implemented with URL-scoped active property selection, dashboard navigation preservation, active-property editing, and Add another property from More.
 
 ## Phase 3: Home Health Dashboard
 
@@ -40,7 +40,7 @@
 - Upcoming maintenance. Data-backed from due-soon/needs-attention asset status.
 - Overdue items.
 - Recently completed work.
-- Premium mobile/tablet layout. Authenticated mobile screenshot QA, first polish pass, Add picker screenshot QA, compact Add picker QA, and Asset Detail passport QA complete; next refinement is a selected-item review wizard for quantities and names.
+- Premium mobile/tablet layout. Authenticated mobile screenshot QA, first polish pass, Add picker screenshot QA, compact Add picker QA, Asset Detail passport QA, and selected-item Add review UX are complete.
 
 ## Phase 4: Work History And Contractors
 

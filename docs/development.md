@@ -31,11 +31,13 @@ Current starter app surface:
 - Mobile-first dashboard shell with Home, Systems, Add, and More sections
 - Guided add flow for authenticated users with a property
 - Reopenable Add item flow for properties that already have assets
-- Compact multi-select Add picker with specific heating/cooling starter items and a focused naming panel for repeat/custom items
+- Compact multi-select Add picker with specific heating/cooling starter items and selected-item review for quantities and repeat/custom names
 - Data-backed visual asset/system rows after assets are created
 - Focused Service Passport asset detail editing for brand, model, serial number, install year, estimated age, condition, last service date, next due date, maintenance interval, expected lifespan, replacement cost, ownership responsibility, and notes
 - Typed asset removal confirmation
-- Property header and switcher placeholder
+- Property header with quiet multi-property switcher
+- Add another property from More
+- Edit active property details from More
 - Home health score card and status counts: Good, Due Soon, Needs Attention, Missing Info
 - Asset/system rows with structured status metadata and friendly missing-info prompts
 - Quick Add actions for Add item, Note, Maintenance, and Photo. Only Add item is currently wired.
@@ -54,7 +56,7 @@ Current verified Supabase state:
 - Multiple same-type assets are supported when each item has a distinct category/name pair, such as `appliance:Garage refrigerator` and `appliance:Kitchen refrigerator`.
 - Authenticated mobile visual QA has been captured for Home, Add, Systems, and Asset Detail.
 - The first mobile polish pass confirms no bottom-nav overlap and no horizontal overflow on the tested 390 x 844 mobile viewport.
-- Add picker QA confirms no bottom-nav overlap and no horizontal overflow for the default picker and selected Refrigerator naming panel.
+- Add picker QA confirms no bottom-nav overlap and no horizontal overflow for the earlier default picker and selected Refrigerator naming panel.
 - Compact Add picker QA confirms no bottom-nav overlap and no horizontal overflow with 17 selectable starter tiles in the primary grid.
 - Asset Detail passport QA confirms no bottom-nav overlap and no horizontal overflow for the selected asset detail screen.
 
@@ -131,6 +133,13 @@ Latest verified handoff checks:
 2026-06-05: Add picker screenshot QA passed for default picker and selected Refrigerator states
 2026-06-05: Asset Detail passport screenshot QA passed for selected asset detail state
 2026-06-05: Compact Add picker screenshot QA passed with 17 primary starter tiles
+2026-06-11: npm run lint passed
+2026-06-11: npm run build passed
+2026-06-11: npm run verify:supabase passed
+2026-06-11: selected-item Add review step implemented for quantities and custom names
+2026-06-11: mobile screenshot QA attempted but blocked because new Supabase sign-ups require email confirmation and documented test accounts did not accept the available QA password convention
+2026-06-11: URL-scoped multi-property switching implemented
+2026-06-11: RLS-safe property detail editing implemented from More
 ```
 
 For dev-server verification, confirm the local app returns HTTP 200 and renders the dashboard shell.
@@ -148,7 +157,7 @@ With Supabase configured and the migration applied, verify:
 - Creating a property redirects back to `/dashboard`.
 - `/dashboard` shows the created property name and location metadata.
 - Re-adding an exact same starter name should not create another visible card.
-- Add item reopens the compact multi-select guided add flow with Popular picks, expandable More home items, object tiles, and one focused naming panel for repeats/custom names.
+- Add item reopens the compact multi-select guided add flow with Popular picks, expandable More home items, object tiles, and a selected-item review step for quantities and names.
 - Adding the same starter type again with a specific name should create a separate asset row.
 - `/dashboard` defaults to a short Home view after inventory exists.
 - `/dashboard?tab=systems` shows the full inventory.
@@ -156,6 +165,11 @@ With Supabase configured and the migration applied, verify:
 - `/dashboard?tab=add` shows the compact multi-select guided Add picker.
 - `/dashboard?tab=more` shows property/account utility surfaces.
 - `/dashboard?inventory=1` remains supported and opens the Add view.
+- `/dashboard?property=<id>&tab=home` selects that owned property when it exists.
+- Dashboard tab links preserve the active `property=<id>` selection.
+- Users with multiple properties can switch from the header on larger screens and from More on mobile.
+- More allows adding another property and redirects to the new property.
+- More allows editing the active property's name, type, address, location, year built, square feet, and notes.
 - Saving asset details updates status and keeps ownership scoped to the signed-in user.
 - Removing an asset requires typing `REMOVE`.
 

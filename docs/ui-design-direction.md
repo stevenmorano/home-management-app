@@ -301,7 +301,7 @@ For first setup, the UI should let users select many household objects quickly f
 
 Do not require users to understand `category`. The UI can still save category behind the scenes.
 
-Implementation status: implemented for the dashboard add flow. The guided add area now uses a compact mobile-first multi-select grid for first setup: users can select many household objects at once, including specific heating/cooling items like Central AC, Heat pump, Mini-split, Furnace, Fireplace, Thermostat, and Water heater instead of one vague HVAC choice. More home items stays expandable. Repeated same-type assets are still supported through the focused "Name this item" panel, and custom item creation stays compact below the picker. The older visible mini-form grid was removed to reduce mobile length and confusion.
+Implementation status: implemented for the dashboard add flow. The guided add area now uses a compact mobile-first multi-select grid for first setup: users can select many household objects at once, including specific heating/cooling items like Central AC, Heat pump, Mini-split, Furnace, Fireplace, Thermostat, and Water heater instead of one vague HVAC choice. More home items stays expandable. Selected items now move into a review step where users choose quantity and customize names such as Kitchen fridge, Basement fridge, Upstairs AC, Basement furnace, Back deck, and Pool deck before records are created in bulk. Custom item creation stays compact below the picker. The older visible mini-form grid was removed to reduce mobile length and confusion.
 
 ### 4. Asset Detail Surface
 
@@ -358,7 +358,7 @@ Implemented in the first HomeKeep Modern Care pass:
 - Compact systems preview on Home.
 - Focused asset detail/edit view from the Systems tab.
 - Mobile polish for the bottom nav, Home Health card, Systems rows, and Asset Detail header wrapping.
-- Compact multi-select Add picker with focused naming panel for repeats/custom names.
+- Compact multi-select Add picker with selected-item review for quantities and repeat/custom names.
 - Authenticated mobile screenshot QA evidence in `docs/qa/mobile-visual-qa.md`.
 
 Still pending:

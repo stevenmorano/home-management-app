@@ -74,7 +74,7 @@ Key columns:
 - `created_at`
 - `updated_at`
 
-The dashboard currently reads the first property for the signed-in user.
+The dashboard reads all properties for the signed-in user, selects the active property from `property=<id>` when present, and lets users edit owned property details from More.
 
 ### `rooms`
 

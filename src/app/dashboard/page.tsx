@@ -29,9 +29,11 @@ import {
   createFirstProperty,
   createSelectedAssets,
   deleteAsset,
-  updateAssetDetails
+  updateAssetDetails,
+  updatePropertyDetails
 } from "@/app/dashboard/actions";
 import { signOut } from "@/app/auth/actions";
+import { DashboardAddFlow } from "@/components/dashboard/add-flow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -92,6 +94,7 @@ interface DashboardPageProps {
     asset?: string;
     inventory?: string;
     message?: string;
+    property?: string;
     starter?: string;
     tab?: string;
   }>;
@@ -106,15 +109,14 @@ type AssetStarterOption = {
 };
 
 const dashboardTabs: Array<{
-  href: string;
   icon: typeof HomeIcon;
   label: string;
   value: DashboardTab;
 }> = [
-  { value: "home", label: "Home", href: "/dashboard?tab=home", icon: HomeIcon },
-  { value: "systems", label: "Systems", href: "/dashboard?tab=systems", icon: Grid2X2 },
-  { value: "add", label: "Add", href: "/dashboard?tab=add", icon: Plus },
-  { value: "more", label: "More", href: "/dashboard?tab=more", icon: Menu }
+  { value: "home", label: "Home", icon: HomeIcon },
+  { value: "systems", label: "Systems", icon: Grid2X2 },
+  { value: "add", label: "Add", icon: Plus },
+  { value: "more", label: "More", icon: Menu }
 ];
 
 const propertyTypeOptions: Array<{ value: PropertyType; label: string }> = [
@@ -269,30 +271,6 @@ const commonAssetOptions: Record<PropertyType, AssetStarterOption[]> = {
   ]
 };
 
-const assetCategoryOptions: Array<{ value: AssetSystemCategory; label: string }> = [
-  { value: "roof", label: "Roof" },
-  { value: "hvac", label: "HVAC" },
-  { value: "furnace", label: "Furnace" },
-  { value: "boiler", label: "Boiler" },
-  { value: "water_heater", label: "Water heater" },
-  { value: "appliance", label: "Appliance" },
-  { value: "electrical", label: "Electrical" },
-  { value: "plumbing", label: "Plumbing" },
-  { value: "gutters", label: "Gutters" },
-  { value: "windows", label: "Windows" },
-  { value: "chimney", label: "Chimney" },
-  { value: "foundation", label: "Foundation" },
-  { value: "deck", label: "Deck" },
-  { value: "driveway", label: "Driveway" },
-  { value: "pool", label: "Pool" },
-  { value: "sump_pump", label: "Sump pump" },
-  { value: "septic_or_sewer", label: "Septic or sewer" },
-  { value: "irrigation", label: "Irrigation" },
-  { value: "garage", label: "Garage" },
-  { value: "security", label: "Security" },
-  { value: "other", label: "Other" }
-];
-
 const ownershipResponsibilityOptions = [
   { value: "owner", label: "Owner" },
   { value: "hoa", label: "HOA" },
@@ -358,104 +336,6 @@ function formatSelectValue(value?: string | null) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function getSuggestedNameExamples(category: AssetSystemCategory) {
-  const examples: Partial<Record<AssetSystemCategory, string>> = {
-    appliance: "Kitchen refrigerator, washer, dryer",
-    deck: "Back deck, front porch, pool deck",
-    hvac: "Upstairs HVAC, downstairs HVAC",
-    water_heater: "Basement water heater",
-    other: "Generator, EV charger, well pump"
-  };
-
-  return examples[category] ?? "Use the name people in your home would recognize";
-}
-
-function getStarterNamePlaceholder(option: { category: AssetSystemCategory; name: string }) {
-  const key = option.name.toLowerCase();
-
-  if (key.includes("central ac")) {
-    return "Main floor AC, upstairs AC";
-  }
-
-  if (key.includes("heat pump")) {
-    return "Main heat pump, upstairs heat pump";
-  }
-
-  if (key.includes("mini-split")) {
-    return "Bedroom mini-split, garage mini-split";
-  }
-
-  if (key.includes("window ac")) {
-    return "Bedroom window AC";
-  }
-
-  if (key.includes("wall ac")) {
-    return "Living room wall AC";
-  }
-
-  if (key.includes("furnace")) {
-    return "Basement furnace, attic furnace";
-  }
-
-  if (key.includes("boiler")) {
-    return "Main boiler";
-  }
-
-  if (key.includes("fireplace")) {
-    return "Living room fireplace";
-  }
-
-  if (key.includes("thermostat")) {
-    return "Main thermostat, upstairs thermostat";
-  }
-
-  if (key.includes("refrigerator")) {
-    return "Kitchen refrigerator, basement fridge";
-  }
-
-  if (key.includes("dishwasher")) {
-    return "Kitchen dishwasher, pantry dishwasher";
-  }
-
-  if (key.includes("hvac")) {
-    return "Main floor HVAC, upstairs HVAC";
-  }
-
-  if (key.includes("deck")) {
-    return "Back deck, pool deck";
-  }
-
-  if (key.includes("water heater")) {
-    return "Basement water heater";
-  }
-
-  return getSuggestedNameExamples(option.category);
-}
-
-function getStarterDisplayName(option: AssetStarterOption) {
-  if (option.shortName) {
-    return option.shortName;
-  }
-
-  const compactNames: Record<string, string> = {
-    "dishwasher": "Dishwasher",
-    "electrical panel": "Elec panel",
-    "fireplace": "Fireplace",
-    "plumbing fixtures": "Plumbing",
-    "range or oven": "Range",
-    "refrigerator": "Fridge",
-    "smoke and safety systems": "Safety",
-    "thermostat": "Thermo",
-    "water heater": "Water heater"
-  };
-
-  return compactNames[option.name.toLowerCase()] ?? option.name;
-}
-
-function getNextStarterName(optionName: string, exactCount: number) {
-  return exactCount > 0 ? `${optionName} ${exactCount + 1}` : optionName;
-}
-
 function getPriorityStarterOptions(options: AssetStarterOption[]) {
   const priorityNames = new Set([
     "roof",
@@ -487,25 +367,22 @@ function getMoreStarterOptions(options: AssetStarterOption[], priorityOptions: A
   return options.filter((option) => !priorityKeys.has(`${option.category}:${option.name}`));
 }
 
-function getStarterKey(option: AssetStarterOption) {
-  return `${option.category}:${option.name}`;
-}
-
-function getStarterHref(option: AssetStarterOption) {
+function getDashboardHref(tab: DashboardTab, propertyId?: string, extraParams?: Record<string, string>) {
   const params = new URLSearchParams({
-    starter: getStarterKey(option),
-    tab: "add"
+    tab
+  });
+
+  if (propertyId) {
+    params.set("property", propertyId);
+  }
+
+  Object.entries(extraParams ?? {}).forEach(([key, value]) => {
+    if (value) {
+      params.set(key, value);
+    }
   });
 
   return `/dashboard?${params.toString()}`;
-}
-
-function getSelectedStarterOption(options: AssetStarterOption[], starterKey?: string) {
-  if (!starterKey) {
-    return null;
-  }
-
-  return options.find((option) => getStarterKey(option) === starterKey) ?? null;
 }
 
 function getDashboardTab(searchParams?: { inventory?: string; tab?: string }, assetCount = 0): DashboardTab {
@@ -760,7 +637,7 @@ function getUserFirstName(email: string) {
   return firstToken.charAt(0).toUpperCase() + firstToken.slice(1);
 }
 
-async function getFirstProperty(userId: string) {
+async function getUserProperties(userId: string) {
   const supabase = await createClient();
 
   await supabase.from("profiles").upsert({
@@ -771,9 +648,7 @@ async function getFirstProperty(userId: string) {
     .from("properties")
     .select("*")
     .eq("user_id", userId)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .order("created_at", { ascending: true });
 }
 
 async function getAssetSystems(propertyId: string) {
@@ -789,7 +664,7 @@ async function getAssetSystems(propertyId: string) {
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const user = await requireUser();
   const resolvedSearchParams = await searchParams;
-  const { data: firstProperty, error } = await getFirstProperty(user.id);
+  const { data: properties, error } = await getUserProperties(user.id);
 
   if (error) {
     return (
@@ -815,7 +690,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     );
   }
 
-  if (!firstProperty) {
+  if (!properties || properties.length === 0) {
     return (
       <DashboardShell userEmail={user.email ?? "Signed in"}>
         <FirstPropertySetup message={resolvedSearchParams?.message} />
@@ -823,12 +698,16 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     );
   }
 
-  const property = toPropertySummary(firstProperty);
-  const { data: assetRows, error: assetError } = await getAssetSystems(firstProperty.id);
+  const activeProperty =
+    properties.find((propertyOption) => propertyOption.id === resolvedSearchParams?.property) ?? properties[0];
+  const property = toPropertySummary(activeProperty);
+  const { data: assetRows, error: assetError } = await getAssetSystems(activeProperty.id);
 
   if (assetError) {
     return (
       <DashboardShell
+        activePropertyId={activeProperty.id}
+        properties={properties}
         propertyName={property.name}
         propertyMeta={`${formatPropertyType(property.propertyType)} - ${property.location}`}
         userEmail={user.email ?? "Signed in"}
@@ -861,6 +740,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   return (
     <DashboardShell
       activeTab={activeTab}
+      activePropertyId={activeProperty.id}
+      properties={properties}
       propertyName={property.name}
       propertyMeta={`${formatPropertyType(property.propertyType)} - ${property.location}`}
       userEmail={user.email ?? "Signed in"}
@@ -870,36 +751,39 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           {resolvedSearchParams.message}
         </div>
       ) : null}
-      <DashboardTabNav activeTab={activeTab} />
+      <DashboardTabNav activeTab={activeTab} propertyId={activeProperty.id} />
 
       {activeTab === "home" ? (
         <DashboardHomeView
           assets={uniqueAssets}
           healthScore={healthScore}
           property={property}
+          propertyId={activeProperty.id}
           statusCounts={statusCounts}
           userFirstName={userFirstName}
         />
       ) : null}
 
       {activeTab === "systems" && selectedAsset ? (
-        <AssetDetailView asset={selectedAsset.asset} summary={selectedAsset.summary} />
+        <AssetDetailView asset={selectedAsset.asset} propertyId={activeProperty.id} summary={selectedAsset.summary} />
       ) : null}
 
       {activeTab === "systems" && !selectedAsset ? (
-        <HomeSystemsPanel assets={uniqueAssets} />
+        <HomeSystemsPanel assets={uniqueAssets} propertyId={activeProperty.id} />
       ) : null}
 
       {activeTab === "add" ? (
         <GuidedAssetChecklist
           existingAssets={uniqueAssets.map(({ asset }) => asset)}
-          property={firstProperty}
-          selectedStarterKey={resolvedSearchParams?.starter}
+          property={activeProperty}
         />
       ) : null}
 
       {activeTab === "more" ? (
         <MoreView
+          activePropertyId={activeProperty.id}
+          properties={properties}
+          propertyRow={activeProperty}
           property={property}
           propertyType={formatPropertyType(property.propertyType)}
           statusCounts={statusCounts}
@@ -914,12 +798,14 @@ function DashboardHomeView({
   assets,
   healthScore,
   property,
+  propertyId,
   statusCounts,
   userFirstName
 }: {
   assets: Array<{ asset: AssetSystemRow; summary: AssetSummary; duplicateCount: number }>;
   healthScore: number;
   property: PropertySummary;
+  propertyId: string;
   statusCounts: Record<AssetStatus, number>;
   userFirstName: string;
 }) {
@@ -938,7 +824,7 @@ function DashboardHomeView({
               </p>
             </div>
             <Button asChild className="w-full rounded-xl bg-[var(--brand)] shadow-lg shadow-blue-200/60 hover:bg-[var(--brand-strong)] sm:w-fit">
-              <Link href="/dashboard?tab=add">
+              <Link href={getDashboardHref("add", propertyId)}>
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 Add item
               </Link>
@@ -952,8 +838,8 @@ function DashboardHomeView({
       </div>
 
       <aside className="flex flex-col gap-4">
-        <QuickActions />
-        <SystemsPreview assets={assets} />
+        <QuickActions propertyId={propertyId} />
+        <SystemsPreview assets={assets} propertyId={propertyId} />
       </aside>
     </section>
   );
@@ -1071,9 +957,9 @@ function UpcomingMaintenance({
   );
 }
 
-function QuickActions() {
+function QuickActions({ propertyId }: { propertyId: string }) {
   const actions = [
-    { label: "Add item", icon: Plus, href: "/dashboard?tab=add" },
+    { label: "Add item", icon: Plus, href: getDashboardHref("add", propertyId) },
     { label: "Note", icon: FileText, href: null },
     { label: "Maintenance", icon: Wrench, href: null },
     { label: "Photo", icon: Camera, href: null }
@@ -1122,9 +1008,11 @@ function QuickActions() {
 }
 
 function SystemsPreview({
-  assets
+  assets,
+  propertyId
 }: {
   assets: Array<{ asset: AssetSystemRow; summary: AssetSummary; duplicateCount: number }>;
+  propertyId: string;
 }) {
   const previewAssets = assets.slice(0, 5);
 
@@ -1136,7 +1024,7 @@ function SystemsPreview({
           <h3 className="text-2xl font-bold text-[var(--foreground)]">Your main records</h3>
         </div>
         <Button asChild size="sm" variant="ghost">
-          <Link href="/dashboard?tab=systems">View all</Link>
+          <Link href={getDashboardHref("systems", propertyId)}>View all</Link>
         </Button>
       </div>
 
@@ -1150,7 +1038,7 @@ function SystemsPreview({
             return (
               <Link
                 className="flex items-center gap-3 rounded-2xl border border-[var(--ledger-line)] bg-gradient-to-r from-white to-[var(--paper-muted)] p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
-                href="/dashboard?tab=systems"
+                href={getDashboardHref("systems", propertyId, { asset: asset.id })}
                 key={asset.id}
               >
                 <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${categoryVisual.bg} ${categoryVisual.text}`}>
@@ -1175,9 +1063,11 @@ function SystemsPreview({
 }
 
 function HomeSystemsPanel({
-  assets
+  assets,
+  propertyId
 }: {
   assets: Array<{ asset: AssetSystemRow; summary: AssetSummary; duplicateCount: number }>;
+  propertyId: string;
 }) {
   return (
     <section className="rounded-3xl border border-[var(--ledger-line)] bg-white p-4 shadow-xl shadow-blue-100/60">
@@ -1203,7 +1093,7 @@ function HomeSystemsPanel({
       </div>
 
       {assets.length > 0 ? (
-        <AssetCards assets={assets} />
+        <AssetCards assets={assets} propertyId={propertyId} />
       ) : (
         <div className="mt-4 rounded-2xl border border-dashed border-[var(--ledger-line)] bg-[var(--paper-muted)] p-5 text-sm text-[var(--ink-soft)]">
           Add systems to start building your home dashboard.
@@ -1214,9 +1104,11 @@ function HomeSystemsPanel({
 }
 
 function AssetCards({
-  assets
+  assets,
+  propertyId
 }: {
   assets: Array<{ asset: AssetSystemRow; summary: AssetSummary; duplicateCount: number }>;
+  propertyId: string;
 }) {
   return (
     <section className="mt-4 space-y-2 sm:space-y-3">
@@ -1226,7 +1118,7 @@ function AssetCards({
         const categoryVisual = getCategoryVisual(asset.category);
         const lastService = getServiceDisplay(asset.last_service_date, "Add service date");
         const nextCheck = getServiceDisplay(asset.next_service_due_date, "Add next check");
-        const detailHref = `/dashboard?tab=systems&asset=${asset.id}`;
+        const detailHref = getDashboardHref("systems", propertyId, { asset: asset.id });
 
         return (
           <Card className="overflow-hidden rounded-3xl border-white bg-white shadow-lg shadow-blue-100/50 transition hover:-translate-y-0.5 hover:shadow-xl" key={asset.id}>
@@ -1274,9 +1166,11 @@ function AssetCards({
 
 function AssetDetailView({
   asset,
+  propertyId,
   summary
 }: {
   asset: AssetSystemRow;
+  propertyId: string;
   summary: AssetSummary;
 }) {
   const meta = statusMeta[summary.status];
@@ -1294,7 +1188,7 @@ function AssetDetailView({
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-4">
       <Button asChild className="w-fit rounded-xl" variant="ghost" size="sm">
-        <Link href="/dashboard?tab=systems">
+        <Link href={getDashboardHref("systems", propertyId)}>
           <ChevronRight className="h-4 w-4 rotate-180" aria-hidden="true" />
           Back to systems
         </Link>
@@ -1626,17 +1520,14 @@ function AssetDetailForm({ asset }: { asset: AssetSystemRow }) {
 
 function GuidedAssetChecklist({
   existingAssets,
-  property,
-  selectedStarterKey
+  property
 }: {
   existingAssets: AssetSystemRow[];
   property: PropertyRow;
-  selectedStarterKey?: string;
 }) {
   const options = commonAssetOptions[property.property_type];
   const priorityOptions = getPriorityStarterOptions(options);
   const moreOptions = getMoreStarterOptions(options, priorityOptions);
-  const selectedOption = getSelectedStarterOption(options, selectedStarterKey);
   const existingStarterCounts = new Map<string, number>();
 
   existingAssets.forEach((asset) => {
@@ -1645,265 +1536,18 @@ function GuidedAssetChecklist({
   });
 
   return (
-    <section className="grid gap-4 xl:grid-cols-[0.94fr_1.06fr]">
-      <Card className="order-2 rounded-3xl border-white bg-white shadow-xl shadow-blue-100/60 xl:order-1">
-        <CardHeader className="pb-3">
-          <Badge variant="warning" className="w-fit">Guided Add</Badge>
-          <CardTitle className="text-2xl font-black">Pick what you want to track</CardTitle>
-          <CardDescription>
-            Tap a home item first. Then name the exact thing in your home, like Basement fridge or Back deck.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form action={createSelectedAssets} className="rounded-[2rem] bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-3 sm:p-4">
-            <input name="property_id" type="hidden" value={property.id} />
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h4 className="text-base font-black text-[var(--foreground)]">Popular picks</h4>
-                <p className="text-sm text-[var(--ink-soft)]">Select everything you have. You can rename and add more later.</p>
-              </div>
-              <Badge className="shrink-0" variant="secondary">Multi-select</Badge>
-            </div>
-            <div className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-6 xl:grid-cols-7">
-              {priorityOptions.map((option) => (
-                <StarterCheckboxTile
-                  existingStarterCounts={existingStarterCounts}
-                  key={`priority-${option.category}-${option.name}`}
-                  option={option}
-                />
-              ))}
-            </div>
-            <Button className="mt-4 h-11 w-full rounded-2xl bg-[var(--brand)] font-black hover:bg-[var(--brand-strong)]" type="submit">
-              Add selected
-            </Button>
-          </form>
-
-          <details className="group mt-4 rounded-[2rem] border border-[var(--ledger-line)] bg-white p-3">
-            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-3xl px-2 text-sm font-black text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]">
-            <span>
-              More home items
-              <span className="ml-2 font-medium text-[var(--ink-soft)]">({moreOptions.length})</span>
-            </span>
-              <span className="rounded-full bg-[var(--paper-muted)] px-3 py-1 text-xs uppercase tracking-[0.14em] text-[var(--ink-soft)] group-open:hidden">
-                Open
-              </span>
-              <span className="hidden rounded-full bg-[var(--paper-muted)] px-3 py-1 text-xs uppercase tracking-[0.14em] text-[var(--ink-soft)] group-open:inline">
-                Close
-              </span>
-            </summary>
-            <div className="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-6 2xl:grid-cols-7">
-              {moreOptions.map((option) => (
-                <StarterObjectTile
-                  existingStarterCounts={existingStarterCounts}
-                  isSelected={selectedOption ? getStarterKey(selectedOption) === getStarterKey(option) : false}
-                  key={`more-${option.category}-${option.name}`}
-                  option={option}
-                />
-              ))}
-            </div>
-          </details>
-        </CardContent>
-      </Card>
-
-      <div className="order-1 space-y-4 xl:sticky xl:top-5 xl:order-2 xl:self-start">
-        {selectedOption ? (
-          <StarterAddPanel
-            existingStarterCounts={existingStarterCounts}
-            option={selectedOption}
-            propertyId={property.id}
-          />
-        ) : null}
-        <div className={selectedOption ? "" : "hidden xl:block"}>
-          <CustomAssetPanel propertyId={property.id} />
-        </div>
-      </div>
-      <div className="order-3 xl:hidden">
-        <CustomAssetPanel propertyId={property.id} />
-      </div>
-    </section>
+    <DashboardAddFlow
+      createCustomAssetAction={createCustomAsset}
+      createSelectedAssetsAction={createSelectedAssets}
+      existingStarterCounts={Array.from(existingStarterCounts, ([key, count]) => ({ count, key }))}
+      moreOptions={moreOptions}
+      priorityOptions={priorityOptions}
+      propertyId={property.id}
+    />
   );
 }
 
-function StarterCheckboxTile({
-  existingStarterCounts,
-  option
-}: {
-  existingStarterCounts: Map<string, number>;
-  option: AssetStarterOption;
-}) {
-  const optionKey = `${option.category}:${option.name.trim().toLowerCase()}`;
-  const exactCount = existingStarterCounts.get(optionKey) ?? 0;
-  const OptionIcon = getCategoryIcon(option.category);
-  const optionVisual = getCategoryVisual(option.category);
-  const inputId = `starter-check-${option.category}-${option.name.toLowerCase().replaceAll(" ", "-")}`;
-  const value = `${option.category}::${option.name}`;
-  const displayName = getStarterDisplayName(option);
-
-  return (
-    <label
-      className="group relative flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border border-white bg-white/85 p-1.5 text-center shadow-sm transition has-[:checked]:border-[var(--brand)] has-[:checked]:bg-[var(--brand)] has-[:checked]:text-white has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[var(--brand)]"
-      htmlFor={inputId}
-    >
-      <input className="peer sr-only" id={inputId} name="assets" type="checkbox" value={value} />
-      <span className={`grid h-8 w-8 place-items-center rounded-2xl transition peer-checked:bg-white/20 peer-checked:text-white ${optionVisual.bg} ${optionVisual.text}`}>
-        {createElement(OptionIcon, { className: "h-4 w-4", "aria-hidden": true })}
-      </span>
-      <span className="min-w-0 text-[0.62rem] font-black leading-3">{displayName}</span>
-      {exactCount > 0 ? (
-        <span className="absolute right-1 top-1 rounded-full bg-white px-1.5 py-0.5 text-[0.55rem] font-black uppercase tracking-wide text-[var(--ink-soft)] peer-checked:bg-white/20 peer-checked:text-white">
-          {exactCount}
-        </span>
-      ) : null}
-    </label>
-  );
-}
-
-function StarterObjectTile({
-  existingStarterCounts,
-  isSelected,
-  option
-}: {
-  existingStarterCounts: Map<string, number>;
-  isSelected: boolean;
-  option: AssetStarterOption;
-}) {
-  const optionKey = `${option.category}:${option.name.trim().toLowerCase()}`;
-  const exactCount = existingStarterCounts.get(optionKey) ?? 0;
-  const OptionIcon = getCategoryIcon(option.category);
-  const optionVisual = getCategoryVisual(option.category);
-  const displayName = getStarterDisplayName(option);
-
-  return (
-    <Link
-      className={`group flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border p-1.5 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] ${
-        isSelected
-          ? "border-[var(--brand)] bg-[var(--brand)] text-white shadow-lg shadow-blue-200/70"
-          : "border-white bg-gradient-to-br from-white to-[var(--paper-muted)] text-[var(--foreground)]"
-      }`}
-      href={getStarterHref(option)}
-    >
-      <div className="relative">
-        <span className={`grid h-8 w-8 place-items-center rounded-2xl ${isSelected ? "bg-white/20 text-white" : `${optionVisual.bg} ${optionVisual.text}`}`}>
-          {createElement(OptionIcon, { className: "h-4 w-4", "aria-hidden": true })}
-        </span>
-        {exactCount > 0 ? (
-          <span className={`absolute -right-2 -top-2 rounded-full px-1.5 py-0.5 text-[0.55rem] font-black uppercase tracking-wide ${isSelected ? "bg-white/20 text-white" : "bg-white text-[var(--ink-soft)]"}`}>
-            {exactCount}
-          </span>
-        ) : null}
-      </div>
-      <div className="min-w-0 text-[0.62rem] font-black leading-3">{displayName}</div>
-    </Link>
-  );
-}
-
-function StarterAddPanel({
-  existingStarterCounts,
-  option,
-  propertyId
-}: {
-  existingStarterCounts: Map<string, number>;
-  option: AssetStarterOption;
-  propertyId: string;
-}) {
-  const optionKey = `${option.category}:${option.name.trim().toLowerCase()}`;
-  const exactCount = existingStarterCounts.get(optionKey) ?? 0;
-  const OptionIcon = getCategoryIcon(option.category);
-  const optionVisual = getCategoryVisual(option.category);
-  const inputId = `selected-starter-${option.category}-${option.name.toLowerCase().replaceAll(" ", "-")}`;
-
-  return (
-    <Card className="overflow-hidden rounded-[2rem] border-white bg-white shadow-2xl shadow-blue-100/70">
-      <CardHeader className="bg-gradient-to-br from-blue-600 via-[var(--brand)] to-cyan-500 text-white">
-        <div className="flex items-start gap-3">
-          <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/20 text-white">
-            {createElement(OptionIcon, { className: "h-7 w-7", "aria-hidden": true })}
-          </span>
-          <div className="min-w-0">
-            <p className="text-sm font-bold text-white/75">Name this item</p>
-            <CardTitle className="mt-1 text-2xl font-black text-white">{option.name}</CardTitle>
-            <CardDescription className="mt-1 text-white/80">
-              Make it specific so anyone in the home knows which one it is.
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4 p-4">
-        <form action={createCustomAsset} className="space-y-4">
-          <input name="property_id" type="hidden" value={propertyId} />
-          <input name="category" type="hidden" value={option.category} />
-          <label className="space-y-2 text-sm font-bold text-[var(--foreground)]" htmlFor={inputId}>
-            Name in your home
-            <input
-              className="h-14 w-full rounded-2xl border border-[var(--ledger-line)] bg-white px-4 text-base font-bold outline-none focus:border-[var(--brand)] focus:ring-4 focus:ring-blue-100"
-              defaultValue={getNextStarterName(option.name, exactCount)}
-              id={inputId}
-              name="name"
-              placeholder={getStarterNamePlaceholder(option)}
-            />
-          </label>
-          <div className="rounded-2xl bg-[var(--paper-muted)] p-3 text-sm leading-6 text-[var(--ink-soft)]">
-            Try names like <span className="font-semibold text-[var(--foreground)]">{getStarterNamePlaceholder(option)}</span>.
-          </div>
-          <Button className="h-12 w-full rounded-2xl bg-[var(--brand)] text-base font-black hover:bg-[var(--brand-strong)]" type="submit">
-            <Plus className="h-5 w-5" aria-hidden="true" />
-            {exactCount > 0 ? "Add another" : "Add item"}
-          </Button>
-        </form>
-        <div className={`rounded-2xl px-3 py-2 text-xs leading-5 ${optionVisual.bg} ${optionVisual.text}`}>
-          {option.description}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function CustomAssetPanel({ propertyId }: { propertyId: string }) {
-  return (
-    <details className="group rounded-[2rem] border border-dashed border-[var(--ledger-line)] bg-white p-3 shadow-lg shadow-blue-100/40">
-      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-3xl px-2 text-sm font-black text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]">
-        <span>Add something custom</span>
-        <span className="rounded-full bg-[var(--paper-muted)] px-3 py-1 text-xs uppercase tracking-[0.14em] text-[var(--ink-soft)] group-open:hidden">
-          Open
-        </span>
-        <span className="hidden rounded-full bg-[var(--paper-muted)] px-3 py-1 text-xs uppercase tracking-[0.14em] text-[var(--ink-soft)] group-open:inline">
-          Close
-        </span>
-      </summary>
-      <form action={createCustomAsset} className="mt-3 grid gap-3">
-        <input name="property_id" type="hidden" value={propertyId} />
-        <label className="space-y-1 text-sm font-medium">
-          Item name
-          <input
-            className={tallFieldClassName}
-            name="name"
-            placeholder="Wine fridge, sauna, well pump, shed roof"
-          />
-        </label>
-        <label className="space-y-1 text-sm font-medium">
-          Type
-          <select
-            className={tallFieldClassName}
-            defaultValue="other"
-            name="category"
-          >
-            {assetCategoryOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Button className="h-11 w-full rounded-xl" type="submit">
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          Add custom item
-        </Button>
-      </form>
-    </details>
-  );
-}
-
-function DashboardTabNav({ activeTab }: { activeTab: DashboardTab }) {
+function DashboardTabNav({ activeTab, propertyId }: { activeTab: DashboardTab; propertyId: string }) {
   return (
     <nav aria-label="Dashboard sections" className="hidden rounded-3xl border border-white/80 bg-white/90 p-1 shadow-lg shadow-blue-100/50 backdrop-blur sm:grid sm:grid-cols-4">
       {dashboardTabs.map((tab) => {
@@ -1917,7 +1561,7 @@ function DashboardTabNav({ activeTab }: { activeTab: DashboardTab }) {
                 ? "bg-[var(--brand)] text-white shadow-md shadow-blue-200/70"
                 : "text-[var(--ink-soft)] hover:bg-[var(--paper-muted)] hover:text-[var(--foreground)]"
             }`}
-            href={tab.href}
+            href={getDashboardHref(tab.value, propertyId)}
             key={tab.value}
           >
             <Icon className="h-4 w-4" aria-hidden="true" />
@@ -1929,7 +1573,7 @@ function DashboardTabNav({ activeTab }: { activeTab: DashboardTab }) {
   );
 }
 
-function MobileDashboardTabNav({ activeTab }: { activeTab: DashboardTab }) {
+function MobileDashboardTabNav({ activeTab, propertyId }: { activeTab: DashboardTab; propertyId: string }) {
   return (
     <nav aria-label="Dashboard sections" className="shrink-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 sm:hidden">
       <div className="grid grid-cols-4 rounded-[1.35rem] border border-white/80 bg-white/95 p-1 shadow-2xl shadow-blue-200/80 backdrop-blur">
@@ -1944,7 +1588,7 @@ function MobileDashboardTabNav({ activeTab }: { activeTab: DashboardTab }) {
                   ? "bg-[var(--brand)] text-white shadow-md shadow-blue-200/70"
                   : "text-[var(--ink-soft)]"
               }`}
-              href={tab.href}
+              href={getDashboardHref(tab.value, propertyId)}
               key={tab.value}
             >
               <Icon className="h-4 w-4" aria-hidden="true" />
@@ -1958,12 +1602,18 @@ function MobileDashboardTabNav({ activeTab }: { activeTab: DashboardTab }) {
 }
 
 function MoreView({
+  activePropertyId,
+  properties,
   property,
+  propertyRow,
   propertyType,
   statusCounts,
   userEmail
 }: {
+  activePropertyId: string;
+  properties: PropertyRow[];
   property: PropertySummary;
+  propertyRow: PropertyRow;
   propertyType: string;
   statusCounts: Record<AssetStatus, number>;
   userEmail: string;
@@ -1980,10 +1630,189 @@ function MoreView({
           <div className="rounded-2xl bg-[var(--paper-muted)] p-4">
             Signed in as <span className="font-semibold text-[var(--foreground)]">{userEmail}</span>
           </div>
+          {properties.length > 1 ? (
+            <div className="rounded-2xl border border-[var(--ledger-line)] bg-white p-2">
+              <p className="px-2 pb-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--ink-soft)]">
+                Switch property
+              </p>
+              <div className="space-y-1">
+                {properties.map((propertyOption) => {
+                  const isActive = propertyOption.id === activePropertyId;
+
+                  return (
+                    <Link
+                      className={`block rounded-xl px-3 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] ${
+                        isActive
+                          ? "bg-[var(--brand)] text-white"
+                          : "text-[var(--foreground)] hover:bg-[var(--paper-muted)]"
+                      }`}
+                      href={getDashboardHref("home", propertyOption.id)}
+                      key={propertyOption.id}
+                    >
+                      <span className="block font-black">{propertyOption.name}</span>
+                      <span className={`block text-xs ${isActive ? "text-white/75" : "text-[var(--ink-soft)]"}`}>
+                        {formatPropertyType(propertyOption.property_type)} - {getPropertyLocation(propertyOption)}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
           <form action={signOut}>
             <Button className="w-full rounded-xl" variant="outline" type="submit">
               Sign out
             </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-3xl border-white bg-white shadow-xl shadow-blue-100/60">
+        <CardHeader>
+          <CardTitle className="text-2xl font-black">Edit property details</CardTitle>
+          <CardDescription>Keep the home profile accurate for dashboards and future records.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={updatePropertyDetails} className="grid gap-3 sm:grid-cols-2">
+            <input name="property_id" type="hidden" value={propertyRow.id} />
+            <label className="space-y-1 text-sm font-medium sm:col-span-2">
+              Property name
+              <input
+                className={tallFieldClassName}
+                defaultValue={propertyRow.name}
+                name="name"
+                placeholder="Primary Home"
+                required
+              />
+            </label>
+            <label className="space-y-1 text-sm font-medium">
+              Type
+              <select className={tallFieldClassName} defaultValue={propertyRow.property_type} name="property_type">
+                {propertyTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="space-y-1 text-sm font-medium">
+              Year built
+              <input
+                className={tallFieldClassName}
+                defaultValue={propertyRow.year_built ?? ""}
+                inputMode="numeric"
+                name="year_built"
+                placeholder="1998"
+              />
+            </label>
+            <label className="space-y-1 text-sm font-medium sm:col-span-2">
+              Street address
+              <input
+                className={tallFieldClassName}
+                defaultValue={propertyRow.address_line_1 ?? ""}
+                name="address_line_1"
+                placeholder="123 Main St"
+              />
+            </label>
+            <label className="space-y-1 text-sm font-medium sm:col-span-2">
+              Address line 2
+              <input
+                className={tallFieldClassName}
+                defaultValue={propertyRow.address_line_2 ?? ""}
+                name="address_line_2"
+                placeholder="Unit, suite, floor"
+              />
+            </label>
+            <label className="space-y-1 text-sm font-medium">
+              City
+              <input className={tallFieldClassName} defaultValue={propertyRow.city ?? ""} name="city" placeholder="Testville" />
+            </label>
+            <label className="space-y-1 text-sm font-medium">
+              State
+              <input className={tallFieldClassName} defaultValue={propertyRow.state ?? ""} name="state" placeholder="NY" />
+            </label>
+            <label className="space-y-1 text-sm font-medium">
+              Postal code
+              <input
+                className={tallFieldClassName}
+                defaultValue={propertyRow.postal_code ?? ""}
+                name="postal_code"
+                placeholder="10001"
+              />
+            </label>
+            <label className="space-y-1 text-sm font-medium">
+              Square feet
+              <input
+                className={tallFieldClassName}
+                defaultValue={propertyRow.square_feet ?? ""}
+                inputMode="numeric"
+                name="square_feet"
+                placeholder="2200"
+              />
+            </label>
+            <label className="space-y-1 text-sm font-medium sm:col-span-2">
+              Notes
+              <textarea
+                className={textareaClassName}
+                defaultValue={propertyRow.notes ?? ""}
+                name="notes"
+                placeholder="HOA notes, access details, or anything useful about this property."
+              />
+            </label>
+            <div className="sm:col-span-2">
+              <Button className="h-11 w-full rounded-xl bg-[var(--brand)] hover:bg-[var(--brand-strong)]" type="submit">
+                Save property details
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-3xl border-white bg-white shadow-xl shadow-blue-100/60">
+        <CardHeader>
+          <CardTitle className="text-2xl font-black">Add another property</CardTitle>
+          <CardDescription>Keep rentals, vacation homes, or family properties separate.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={createFirstProperty} className="grid gap-3 sm:grid-cols-2">
+            <input name="return_tab" type="hidden" value="more" />
+            <label className="space-y-1 text-sm font-medium sm:col-span-2">
+              Property name
+              <input
+                className={tallFieldClassName}
+                name="name"
+                placeholder="Lake house, rental duplex, Mom's condo"
+                required
+              />
+            </label>
+            <label className="space-y-1 text-sm font-medium">
+              Type
+              <select className={tallFieldClassName} defaultValue="single_family_house" name="property_type">
+                {propertyTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="space-y-1 text-sm font-medium">
+              City
+              <input className={tallFieldClassName} name="city" placeholder="Testville" />
+            </label>
+            <label className="space-y-1 text-sm font-medium">
+              State
+              <input className={tallFieldClassName} name="state" placeholder="NY" />
+            </label>
+            <label className="space-y-1 text-sm font-medium">
+              Year built
+              <input className={tallFieldClassName} inputMode="numeric" name="year_built" placeholder="1998" />
+            </label>
+            <div className="sm:col-span-2">
+              <Button className="h-11 w-full rounded-xl bg-[var(--brand)] hover:bg-[var(--brand-strong)]" type="submit">
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                Add property
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
@@ -2011,14 +1840,18 @@ function MoreView({
 }
 
 function DashboardShell({
+  activePropertyId,
   activeTab,
   children,
+  properties = [],
   propertyMeta,
   propertyName = "First property setup",
   userEmail
 }: {
+  activePropertyId?: string;
   activeTab?: DashboardTab;
   children: React.ReactNode;
+  properties?: PropertyRow[];
   propertyMeta?: string;
   propertyName?: string;
   userEmail: string;
@@ -2043,9 +1876,9 @@ function DashboardShell({
           <div className="flex items-center gap-2">
             {propertyMeta ? <Badge className="hidden md:inline-flex" variant="secondary">{propertyMeta}</Badge> : null}
             <Badge className="hidden lg:inline-flex" variant="secondary">{userEmail}</Badge>
-            <Button className="hidden sm:inline-flex" variant="outline" size="sm">
-              Switch property
-            </Button>
+            {activePropertyId && properties.length > 1 ? (
+              <PropertySwitcher activePropertyId={activePropertyId} properties={properties} />
+            ) : null}
             <button className="grid h-10 w-10 place-items-center rounded-full border border-[var(--ledger-line)] text-[var(--foreground)]" type="button">
               <Bell className="h-5 w-5" aria-hidden="true" />
               <span className="sr-only">Notifications</span>
@@ -2061,9 +1894,48 @@ function DashboardShell({
         <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden pb-4 sm:min-h-0 sm:flex-none sm:overflow-visible sm:pb-0" data-dashboard-content>
           {children}
         </div>
-        {activeTab ? <MobileDashboardTabNav activeTab={activeTab} /> : null}
+        {activeTab && activePropertyId ? <MobileDashboardTabNav activeTab={activeTab} propertyId={activePropertyId} /> : null}
       </div>
     </main>
+  );
+}
+
+function PropertySwitcher({
+  activePropertyId,
+  properties
+}: {
+  activePropertyId: string;
+  properties: PropertyRow[];
+}) {
+  return (
+    <details className="group relative hidden sm:block">
+      <summary className="flex h-9 cursor-pointer list-none items-center gap-2 rounded-xl border border-[var(--ledger-line)] bg-white px-3 text-sm font-bold text-[var(--foreground)] shadow-sm transition hover:bg-[var(--paper-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]">
+        Switch property
+      </summary>
+      <div className="absolute right-0 z-20 mt-2 w-72 overflow-hidden rounded-2xl border border-[var(--ledger-line)] bg-white p-2 shadow-2xl shadow-blue-100/80">
+        {properties.map((propertyOption) => {
+          const isActive = propertyOption.id === activePropertyId;
+          const location = getPropertyLocation(propertyOption);
+
+          return (
+            <Link
+              className={`block rounded-xl px-3 py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] ${
+                isActive
+                  ? "bg-[var(--brand)] text-white"
+                  : "text-[var(--foreground)] hover:bg-[var(--paper-muted)]"
+              }`}
+              href={getDashboardHref("home", propertyOption.id)}
+              key={propertyOption.id}
+            >
+              <span className="block font-black">{propertyOption.name}</span>
+              <span className={`block text-xs ${isActive ? "text-white/75" : "text-[var(--ink-soft)]"}`}>
+                {formatPropertyType(propertyOption.property_type)} - {location}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </details>
   );
 }
 

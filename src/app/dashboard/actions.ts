@@ -286,6 +286,7 @@ export async function createFirstProperty(formData: FormData) {
   const supabase = await createClient();
 
   const name = optionalText(formData.get("name"));
+  const returnTab = String(formData.get("return_tab") ?? "");
 
   if (!name) {
     redirect("/dashboard?message=Property%20name%20is%20required");
@@ -297,7 +298,7 @@ export async function createFirstProperty(formData: FormData) {
     name: user.user_metadata.name ?? null
   });
 
-  const { error } = await supabase.from("properties").insert({
+  const { data: property, error } = await supabase.from("properties").insert({
     user_id: user.id,
     name,
     property_type: parsePropertyType(formData.get("property_type")),
@@ -308,7 +309,7 @@ export async function createFirstProperty(formData: FormData) {
     year_built: optionalPositiveInteger(formData.get("year_built")),
     square_feet: optionalPositiveInteger(formData.get("square_feet")),
     notes: optionalText(formData.get("notes"))
-  });
+  }).select("id").single();
 
   if (error) {
     const params = new URLSearchParams({
@@ -317,7 +318,60 @@ export async function createFirstProperty(formData: FormData) {
     redirect(`/dashboard?${params.toString()}`);
   }
 
-  redirect("/dashboard");
+  const params = new URLSearchParams();
+
+  if (property?.id) {
+    params.set("property", property.id);
+  }
+
+  if (returnTab === "more") {
+    params.set("tab", "more");
+    params.set("message", "Property added");
+  }
+
+  redirect(`/dashboard${params.size > 0 ? `?${params.toString()}` : ""}`);
+}
+
+export async function updatePropertyDetails(formData: FormData) {
+  const user = await requireUser();
+  const propertyId = optionalText(formData.get("property_id"));
+  const name = optionalText(formData.get("name"));
+
+  if (!propertyId) {
+    redirect("/dashboard?message=Property%20is%20required");
+  }
+
+  if (!name) {
+    redirect(`/dashboard?tab=more&property=${propertyId}&message=Property%20name%20is%20required`);
+  }
+
+  const { property, supabase } = await requireOwnedProperty(propertyId, user.id);
+  const { error } = await supabase
+    .from("properties")
+    .update({
+      name,
+      property_type: parsePropertyType(formData.get("property_type")),
+      address_line_1: optionalText(formData.get("address_line_1")),
+      address_line_2: optionalText(formData.get("address_line_2")),
+      city: optionalText(formData.get("city")),
+      state: optionalText(formData.get("state")),
+      postal_code: optionalText(formData.get("postal_code")),
+      year_built: optionalPositiveInteger(formData.get("year_built")),
+      square_feet: optionalPositiveInteger(formData.get("square_feet")),
+      notes: optionalText(formData.get("notes"))
+    })
+    .eq("id", property.id);
+
+  if (error) {
+    const params = new URLSearchParams({
+      tab: "more",
+      property: property.id,
+      message: `Could not update property: ${error.message}`
+    });
+    redirect(`/dashboard?${params.toString()}`);
+  }
+
+  redirect(`/dashboard?tab=more&property=${property.id}&message=Property%20details%20saved`);
 }
 
 export async function createSelectedAssets(formData: FormData) {

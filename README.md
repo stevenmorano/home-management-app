@@ -14,15 +14,16 @@ Current app surfaces:
 - `/dashboard`: protected property dashboard.
 - `/dashboard?tab=home`: mobile-first Home summary.
 - `/dashboard?tab=systems`: full inventory and selected asset detail views.
-- `/dashboard?tab=add`: compact multi-select Add picker.
-- `/dashboard?tab=more`: property/account utility view.
+- `/dashboard?tab=add`: compact multi-select Add picker with selected-item review.
+- `/dashboard?tab=more`: property/account utility view with property switching, editing, and add-property support.
 - First-property setup for authenticated users with no properties.
 - HomeKeep Modern Care dashboard with a home health score, upcoming maintenance, quick actions, and visual home-system rows.
 - Guided add flow for starter systems/assets based on property type.
 - Mobile-first dashboard sections for Home, Systems, Add, and More.
-- Compact multi-select Add picker with specific heating/cooling items and a focused naming panel for repeat/custom items.
+- Compact multi-select Add picker with specific heating/cooling items and a selected-item review step for quantities and repeat/custom names.
+- URL-scoped multi-property switching with active property editing from More.
 - Data-backed asset/system rows after checklist or custom creation.
-- Reopenable Add item flow with repeatable starter cards and added-count labels.
+- Reopenable Add item flow with repeatable starter tiles, selected-item quantities, custom names, and added-count labels.
 - Focused asset detail editing for identity, age, maintenance, planning, responsibility, and notes.
 - Typed asset removal confirmation.
 - Authenticated mobile visual QA evidence for Home, Add, Systems, and Asset Detail in `docs/qa/mobile-visual-qa.md`.

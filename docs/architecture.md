@@ -94,11 +94,13 @@ Implemented:
 - RLS-enabled `profiles`, `properties`, `rooms`, and `asset_systems`.
 - Placeholder generated-style types in `src/types/database.ts`.
 - First-property setup server action in `src/app/dashboard/actions.ts`.
-- Dashboard query for the signed-in user's first property.
+- Add-property and active-property detail update server actions in `src/app/dashboard/actions.ts`.
+- Dashboard query for all signed-in user properties, with active property selection from `property=<id>`.
 - Guided starter asset write path in `src/app/dashboard/actions.ts`.
 - Asset detail update action in `src/app/dashboard/actions.ts`.
 - Dashboard query for the active property's asset systems.
 - Custom asset/system creation from the inventory panel.
+- Selected-item Add review client flow for quantities and custom names before bulk asset/system creation.
 - Focused detail editing for maintenance interval and next-service-due-date.
 - Focused detail editing for asset identity, lifecycle, replacement-cost, and ownership-responsibility.
 - Typed-confirmation asset/system removal.

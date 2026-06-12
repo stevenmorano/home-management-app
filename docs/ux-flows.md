@@ -59,11 +59,11 @@ Current implementation:
 - Users can reopen the guided add flow from the dashboard with Add item.
 - Starter items are compact multi-select object tiles, not one-time disabled checklist options.
 - The first Add view lets users select many things they have at once.
-- Bulk selected starter tiles create one `asset_systems` row per selected item, then send the user to Systems for review.
-- Tapping a repeat/custom starter still opens one focused naming panel with an editable "Name in your home" field and a sensible default, such as Refrigerator, so users can rename it to Basement fridge before adding.
+- The second Add view is a review step where users set quantity and customize names before creation.
+- Bulk reviewed starter items create one `asset_systems` row per reviewed name, then send the user to Systems for review.
 - Users can add custom assets/systems beyond the starter list by choosing a category and name.
 - Users can add multiple items of the same type by giving each one a specific recognizable name, such as Garage refrigerator, Butler pantry dishwasher, Upstairs AC, Basement furnace, or Back deck.
-- The add flow supports compact multi-select items from Popular picks and an expandable More home items section instead of showing many mini-forms at once.
+- The add flow supports compact multi-select items from Popular picks and an expandable More home items section, then shows only the selected review controls instead of showing many mini-forms at once.
 - Heating/cooling starters are specific user-facing items, such as Central AC, Heat pump, Mini-split, Furnace, Fireplace, Thermostat, and Water heater, instead of one vague HVAC choice.
 - New starter assets default to `status = missing_info`, `condition = unknown`, `estimated_age_range = unknown`, and `ownership_responsibility = owner`.
 - Dashboard asset cards read from Supabase.
@@ -141,4 +141,7 @@ Calendar-worthy examples:
 
 - Property switcher is visible from the dashboard.
 - Adding a second property should not disrupt the first property.
+- The active property is represented in dashboard URLs as `property=<id>`, and Home, Systems, Add, and More navigation preserves that selection.
+- Users can add another property from More without leaving the dashboard shell.
+- If a user has one property, the header stays quiet; if they have multiple properties, the dashboard exposes a switcher.
 - Global views can come later. MVP can focus on per-property dashboards.
