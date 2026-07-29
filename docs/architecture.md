@@ -84,7 +84,7 @@ Supabase dependencies are installed and helper modules exist for future browser/
 - `src/lib/env.ts`
 - `src/lib/auth.ts`
 
-Email/password auth flow, protected route handling, the initial schema migration, and real Supabase connectivity are implemented. No storage bucket, upload flow, work-record schema, reminder schema, contractor schema, document schema, or Google Calendar route has been implemented yet.
+Email/password auth flow, protected route handling, the property/asset schema, the RLS-backed work-record schema, and real Supabase connectivity are implemented. No storage bucket, upload flow, reminder schema, contractor schema, document schema, or Google Calendar route has been implemented yet.
 
 ### Current Data Implementation
 
@@ -104,7 +104,7 @@ Implemented:
 - Focused detail editing for maintenance interval and next-service-due-date.
 - Focused detail editing for asset identity, lifecycle, replacement-cost, and ownership-responsibility.
 - Typed-confirmation asset/system removal.
-- Dashboard status calculation based on missing detail state, condition, and due dates.
+- Shared asset-health domain calculation based on known condition and explicit due dates, with New York pilot calendar boundaries, separate assessed-system coverage, and no score when health evidence is unavailable.
 - First HomeKeep Modern Care dashboard UI pass with a home health score card, upcoming maintenance list, quick actions, visual home-system rows, focused asset detail views, and first mobile polish pass.
 - `npm run verify:supabase` confirms the initial tables are reachable.
 - A test Supabase user/property write path has been verified through RLS.

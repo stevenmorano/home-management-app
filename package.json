@@ -2,11 +2,19 @@
   "name": "home-management-app",
   "version": "0.1.0",
   "private": true,
+  "overrides": {
+    "postcss": "8.5.23",
+    "sharp": "0.35.3"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:e2e": "npm run build && playwright test",
+    "audit:production": "npm audit --omit=dev --audit-level=high",
+    "verify:e2e-env": "node scripts/verify-e2e-env.mjs",
     "verify:supabase": "node scripts/verify-supabase-foundation.mjs"
   },
   "dependencies": {
@@ -16,20 +24,23 @@
     "class-variance-authority": "latest",
     "clsx": "latest",
     "lucide-react": "latest",
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest",
+    "next": "16.2.12",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "tailwind-merge": "latest",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@next/env": "16.2.12",
+    "@playwright/test": "1.62.0",
     "@tailwindcss/postcss": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "eslint": "latest",
-    "eslint-config-next": "latest",
+    "eslint-config-next": "16.2.12",
     "tailwindcss": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "vitest": "4.1.10"
   }
 }

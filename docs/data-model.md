@@ -1,11 +1,13 @@
 # Data Model
 
-This is the planned MVP data model. The initial implemented schema currently covers `profiles`, `properties`, `rooms`, and `asset_systems`.
+This is the planned MVP data model. The implemented schema currently covers `profiles`, `properties`, `rooms`, `asset_systems`, and `work_records`.
 
-Current migration:
+Current migrations:
 
 ```text
 supabase/migrations/202606040001_initial_home_schema.sql
+supabase/migrations/202606040002_dedupe_asset_systems.sql
+supabase/migrations/202607280001_work_records.sql
 ```
 
 Current placeholder TypeScript database types:

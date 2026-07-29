@@ -6,8 +6,8 @@ This document records the current Supabase authentication setup and assumptions 
 
 Implemented:
 
-- Supabase SSR client helpers for server, browser, and middleware contexts.
-- Middleware session refresh using Supabase auth cookies.
+- Supabase SSR client helpers for server, browser, and proxy contexts.
+- Next.js proxy session refresh using Supabase auth cookies.
 - Email/password sign in.
 - Email/password sign up.
 - Auth callback route for email confirmation links.
@@ -55,7 +55,8 @@ The current local `.env.local` contains Supabase project values. The app intenti
 - `src/lib/auth.ts`: reads the current user and protects server routes.
 - `src/lib/supabase/server.ts`: creates a per-request Supabase server client.
 - `src/lib/supabase/client.ts`: creates a browser Supabase client for future client components.
-- `src/lib/supabase/middleware.ts`: refreshes Supabase auth cookies.
+- `src/lib/supabase/middleware.ts`: shared cookie-refresh implementation called by `proxy.ts`.
+- `proxy.ts`: Next.js request boundary for Supabase session refresh.
 - `src/app/auth/actions.ts`: server actions for sign in, sign up, and sign out.
 - `src/app/auth/callback/route.ts`: email confirmation callback handler.
 
@@ -70,12 +71,14 @@ The current local `.env.local` contains Supabase project values. The app intenti
 
 ## RLS Preparation
 
-The first schema migration enables RLS for `profiles`, `properties`, `rooms`, and `asset_systems`.
+The applied migrations enable RLS for `profiles`, `properties`, `rooms`,
+`asset_systems`, and `work_records`.
 
 Current migration:
 
 ```text
 supabase/migrations/202606040001_initial_home_schema.sql
+supabase/migrations/202607280001_work_records.sql
 ```
 
 Policy shape:
@@ -101,7 +104,9 @@ on properties for delete
 using (user_id = auth.uid());
 ```
 
-Rooms and asset systems use ownership checks through the parent property. Apply the same pattern later to work records, reminders, contractors, and document metadata.
+Rooms, asset systems, and work records use ownership checks through the parent
+property. Apply the same pattern to reminders and document metadata. Contractor
+ownership will be defined with the contractor-directory design.
 
 ## Next Auth Work
 

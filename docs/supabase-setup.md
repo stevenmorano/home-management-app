@@ -1,16 +1,17 @@
 # Supabase Setup And Verification
 
-Use this guide to connect the local app to a Supabase project and verify the current auth plus first-property flow.
+Use this guide to connect the local app to Supabase and verify authentication,
+property inventory, health, and work-history flows.
 
 ## Current Project Status
 
 The local project is currently connected to Supabase:
 
 - `.env.local` contains the Supabase project URL and publishable anon key.
-- The initial schema migration and duplicate-prevention migration have been applied.
+- The initial, duplicate-prevention, and work-history migrations have been applied.
 - `npm run verify:supabase` passes.
-- A test user and test property were created successfully through the authenticated/RLS write path.
-- Test asset creation, custom asset creation, duplicate prevention, asset detail updates, and asset removal have been verified through authenticated/RLS-safe write paths or the same app ownership-check patterns.
+- One permanent automation user runs authenticated coverage through normal RLS.
+- Property, asset, health, and Care Ledger lifecycle coverage passes without creating per-run auth users.
 
 ## 1. Create `.env.local`
 
@@ -40,6 +41,7 @@ Apply migration SQL files to the Supabase project in order:
 ```text
 supabase/migrations/202606040001_initial_home_schema.sql
 supabase/migrations/202606040002_dedupe_asset_systems.sql
+supabase/migrations/202607280001_work_records.sql
 ```
 
 Current options:
@@ -64,10 +66,11 @@ This checks:
 - `properties` table is queryable.
 - `rooms` table is queryable.
 - `asset_systems` table is queryable.
+- `work_records` table is queryable.
 
 Because RLS is enabled, this script only verifies schema reachability with the anon key. It does not bypass user privacy.
 
-## 4. Verify Auth, First Property, And Inventory
+## 4. Verify Auth, Inventory, And Work History
 
 Run the app:
 
@@ -88,28 +91,15 @@ Then verify:
 9. Add a repeated same-type item with a specific name, such as Garage refrigerator, Upstairs AC, or Basement furnace.
 10. Save asset details, including service dates, maintenance interval, replacement planning, and notes.
 11. Remove an asset only after typing `REMOVE`.
-12. Sign out.
-13. Confirm `/dashboard` redirects back to `/login`.
+12. Open Maintenance from Quick Add and create completed work.
+13. Confirm Home and a linked Service Passport show the record.
+14. Edit and delete the record using typed confirmation.
+15. Sign out.
+16. Confirm `/dashboard` redirects back to `/login`.
 
-Current verified test account:
-
-```text
-home-management-test-1780544589781@gmail.com
-```
-
-Current verified test property:
-
-```text
-Test Property 1780544589781
-Testville, NY
-```
-
-Current verified asset edit test:
-
-```text
-home-management-edit-test-1780545793132@gmail.com
-Edit Flow Test 1780545793132
-```
+For repeatable verification, configure the permanent automation account described in
+`docs/ci-authenticated-testing-design.md` and run `npm run test:e2e`. Do not create a
+new Supabase Auth user for each run.
 
 ## Troubleshooting
 

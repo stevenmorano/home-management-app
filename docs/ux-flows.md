@@ -66,9 +66,12 @@ Current implementation:
 - The add flow supports compact multi-select items from Popular picks and an expandable More home items section, then shows only the selected review controls instead of showing many mini-forms at once.
 - Heating/cooling starters are specific user-facing items, such as Central AC, Heat pump, Mini-split, Furnace, Fireplace, Thermostat, and Water heater, instead of one vague HVAC choice.
 - New starter assets default to `status = missing_info`, `condition = unknown`, `estimated_age_range = unknown`, and `ownership_responsibility = owner`.
+- Home health remains unavailable until at least one system has a known condition or explicit next-service due date. Descriptive details and last-service dates improve the record without implying that the system is healthy.
+- Once systems are assessable, the score covers only those systems and the dashboard separately shows how many of the property's systems were assessed.
 - Dashboard asset cards read from Supabase.
 - Dashboard asset cards show compact record summaries by default, including next action and status reason.
 - Dashboard asset cards link to a focused Systems detail view at `/dashboard?tab=systems&asset=<id>`.
+- Users can create rooms/locations from More, assign an asset/system to one from the focused detail view, and see the assigned location on Systems rows and asset detail.
 - The detail view uses a Service Passport layout with a hero, status badge, service metrics, status explanation, notes, record profile, and compact edit area.
 - The detail view exposes the full details form for brand, model, serial number, install year, estimated age, condition, last service date, next service due date, maintenance interval, expected lifespan, estimated replacement cost, ownership responsibility, and notes.
 - The detail view includes a typed confirmation remove flow for deleting an asset from the property inventory.
@@ -99,16 +102,20 @@ Current implementation:
 - Home is a compact summary with home health, upcoming maintenance, quick actions, and a systems preview.
 - Systems contains the full inventory and selected-asset detail/edit views.
 - Add contains the compact multi-select starter flow plus focused repeat/custom naming.
-- More contains property/account utility surfaces.
+- More contains property/account utility surfaces and basic room/location management.
 - The dashboard/sidebar split is reserved for wider desktop screens; tablet and smaller layouts prioritize focused sections and a single readable column.
-- Asset records with unknown or incomplete details remain Missing Info.
-- Saving useful details moves an asset out of Missing Info unless condition or due-date rules indicate another status.
+- Assets without a known condition or explicit next-service due date remain Missing Info for health purposes.
+- Saving descriptive details improves the record, while saving condition or an explicit next-service due date makes health assessable.
 - Poor condition or overdue service marks an asset Needs Attention.
 - Service due within 30 days or Fair condition marks an asset Due Soon.
 
 ## Work History Flow
 
 Fast work record entry:
+
+Implementation status: the Care Ledger now supports property-wide completed-work
+create, view, edit, and typed deletion, plus optional asset and room links. Home and
+Service Passports surface recent linked history.
 
 1. What was done?
 2. When was it done?

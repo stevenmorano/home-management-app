@@ -27,23 +27,28 @@ The app may store sensitive homeowner data, including:
 - Supabase helper modules intentionally fail fast when auth-only code paths require missing public Supabase values.
 - `/login` shows a setup warning when Supabase is not configured.
 - `/dashboard` is protected and redirects unauthenticated users to `/login`.
-- Middleware refreshes Supabase auth cookies for server-rendered routes.
-- Initial RLS policies are included for profiles, properties, rooms, and asset systems.
+- The Next.js proxy refreshes Supabase auth cookies for server-rendered routes.
+- RLS policies are implemented for profiles, properties, rooms, asset systems, and work records.
 - Initial RLS-protected property creation has been verified with a test user.
 - Initial RLS-protected asset-system creation has been verified with a test user.
 - Initial RLS-protected asset-system detail updates have been verified with a test user.
 - Asset-system custom creation, detail updates, and removal use ownership checks through the parent property.
 - Duplicate asset rows are prevented by ownership-scoped application checks and a property-scoped unique index migration.
 - Multiple same-type assets are allowed when each item has a distinct name; exact duplicates are blocked per property by category and normalized name.
+- Work-record reads and mutations are scoped through the owned parent property.
+- Work-record validation rejects cross-property asset and room links.
+- CI and local browser coverage use one permanent automation account through normal RLS; no service-role key is stored.
+- Authentication state, local environment files, Playwright reports, and generated test fixtures are excluded from git.
+- The auth callback rejects external redirect targets.
 - No storage buckets, uploads, or Google OAuth token handling have been implemented yet.
 
 ## Row-Level Security Preparation
 
-Before real homeowner data beyond the initial property flow is stored:
+For every new user-owned table:
 
 - Enable RLS on every user-owned table.
 - Use `auth.uid()` ownership checks for `profiles`, `properties`, and any table with a direct `user_id`.
-- For child records such as rooms, assets, work records, reminders, and documents, enforce access through the owning property or store a redundant `user_id` if that simplifies safe policies.
+- For child records such as rooms, assets, reminders, and documents, enforce access through the owning property or store a redundant `user_id` if that simplifies safe policies.
 - Never rely on client-side filtering as the privacy boundary.
 
 ## Upload Privacy

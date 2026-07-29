@@ -2,10 +2,14 @@
 
 import { redirect } from "next/navigation";
 
+import {
+  calculateAssetStatus,
+  getPilotCalendarDate
+} from "@/lib/asset-health";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { parseWorkRecordFields } from "@/lib/work-record";
 import type {
-  AssetStatus,
   AssetSystemCategory,
   AssetSystemInsert,
   MaintenanceIntervalUnit,
@@ -191,78 +195,31 @@ function parseOwnershipResponsibility(value: FormDataEntryValue | null): Ownersh
     : "owner";
 }
 
-function daysUntil(dateText: string) {
-  const today = new Date();
-  const dueDate = new Date(`${dateText}T00:00:00`);
-  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+function parseOptionalUuid(value: FormDataEntryValue | null) {
+  const text = optionalText(value);
 
-  return Math.ceil((dueDate.getTime() - todayStart.getTime()) / 86_400_000);
+  if (!text) {
+    return null;
+  }
+
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text)
+    ? text
+    : null;
 }
 
-function calculateAssetStatus({
-  condition,
-  estimatedAgeRange,
-  estimatedReplacementCost,
-  expectedLifespanYears,
-  identificationDetails,
-  installYear,
-  lastServiceDate,
-  maintenanceIntervalUnit,
-  maintenanceIntervalValue,
-  nextServiceDueDate,
-  notes
-}: {
-  condition: (typeof assetConditions)[number];
-  estimatedAgeRange: (typeof estimatedAgeRanges)[number];
-  estimatedReplacementCost: number | null;
-  expectedLifespanYears: number | null;
-  identificationDetails: string[];
-  installYear: number | null;
-  lastServiceDate: string | null;
-  maintenanceIntervalUnit: MaintenanceIntervalUnit | null;
-  maintenanceIntervalValue: number | null;
-  nextServiceDueDate: string | null;
-  notes: string | null;
-}): AssetStatus {
-  const hasUsefulDetails = Boolean(
-    installYear ||
-      lastServiceDate ||
-      nextServiceDueDate ||
-      notes ||
-      expectedLifespanYears ||
-      estimatedReplacementCost !== null ||
-      identificationDetails.some(Boolean) ||
-      maintenanceIntervalValue ||
-      maintenanceIntervalUnit ||
-      estimatedAgeRange !== "unknown" ||
-      condition !== "unknown"
-  );
+function maintenanceRedirect(
+  propertyId: string,
+  message: string,
+  extraParams?: Record<string, string>
+): never {
+  const params = new URLSearchParams({
+    message,
+    property: propertyId,
+    tab: "maintenance",
+    ...extraParams
+  });
 
-  if (!hasUsefulDetails) {
-    return "missing_info";
-  }
-
-  if (condition === "poor") {
-    return "needs_attention";
-  }
-
-  if (nextServiceDueDate) {
-    const dueInDays = daysUntil(nextServiceDueDate);
-
-    if (dueInDays < 0) {
-      return "needs_attention";
-    }
-
-    if (dueInDays <= 30) {
-      return "due_soon";
-    }
-  }
-
-  if (condition === "fair") {
-    return "due_soon";
-  }
-
-  return "good";
+  redirect(`/dashboard?${params.toString()}`);
 }
 
 async function requireOwnedProperty(propertyId: string, userId: string) {
@@ -279,6 +236,57 @@ async function requireOwnedProperty(propertyId: string, userId: string) {
   }
 
   return { property, supabase };
+}
+
+async function validateWorkRecordLinks(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  propertyId: string,
+  assetSystemId: string | null,
+  roomId: string | null
+) {
+  if (assetSystemId) {
+    const { data: asset, error } = await supabase
+      .from("asset_systems")
+      .select("id")
+      .eq("id", assetSystemId)
+      .eq("property_id", propertyId)
+      .maybeSingle();
+
+    if (error || !asset) {
+      return "Linked asset was not found for this property";
+    }
+  }
+
+  if (roomId) {
+    const { data: room, error } = await supabase
+      .from("rooms")
+      .select("id")
+      .eq("id", roomId)
+      .eq("property_id", propertyId)
+      .maybeSingle();
+
+    if (error || !room) {
+      return "Linked location was not found for this property";
+    }
+  }
+
+  return null;
+}
+
+async function requireOwnedWorkRecord(recordId: string, userId: string) {
+  const supabase = await createClient();
+  const { data: record, error } = await supabase
+    .from("work_records")
+    .select("id, property_id, properties!inner(user_id)")
+    .eq("id", recordId)
+    .eq("properties.user_id", userId)
+    .maybeSingle();
+
+  if (error || !record) {
+    redirect("/dashboard?tab=maintenance&message=Maintenance%20record%20not%20found");
+  }
+
+  return { record, supabase };
 }
 
 export async function createFirstProperty(formData: FormData) {
@@ -372,6 +380,137 @@ export async function updatePropertyDetails(formData: FormData) {
   }
 
   redirect(`/dashboard?tab=more&property=${property.id}&message=Property%20details%20saved`);
+}
+
+export async function createRoom(formData: FormData) {
+  const user = await requireUser();
+  const propertyId = optionalText(formData.get("property_id"));
+  const name = optionalText(formData.get("name"));
+
+  if (!propertyId) {
+    redirect("/dashboard?message=Property%20is%20required");
+  }
+
+  if (!name) {
+    redirect(`/dashboard?tab=more&property=${propertyId}&message=Location%20name%20is%20required`);
+  }
+
+  const { property, supabase } = await requireOwnedProperty(propertyId, user.id);
+  const { data: existingRooms, error: existingRoomsError } = await supabase
+    .from("rooms")
+    .select("name")
+    .eq("property_id", property.id);
+
+  if (existingRoomsError) {
+    const params = new URLSearchParams({
+      tab: "more",
+      property: property.id,
+      message: `Could not check locations: ${existingRoomsError.message}`
+    });
+    redirect(`/dashboard?${params.toString()}`);
+  }
+
+  if ((existingRooms ?? []).some((room) => room.name.trim().toLowerCase() === name.trim().toLowerCase())) {
+    redirect(`/dashboard?tab=more&property=${property.id}&message=That%20location%20already%20exists`);
+  }
+
+  const { error } = await supabase.from("rooms").insert({
+    property_id: property.id,
+    name,
+    room_type: optionalText(formData.get("room_type")),
+    notes: optionalText(formData.get("notes"))
+  });
+
+  if (error) {
+    const params = new URLSearchParams({
+      tab: "more",
+      property: property.id,
+      message: `Could not create location: ${error.message}`
+    });
+    redirect(`/dashboard?${params.toString()}`);
+  }
+
+  redirect(`/dashboard?tab=more&property=${property.id}&message=Location%20added`);
+}
+
+export async function updateRoom(formData: FormData) {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const roomId = optionalText(formData.get("room_id"));
+  const name = optionalText(formData.get("name"));
+
+  if (!roomId) {
+    redirect("/dashboard?tab=more&message=Location%20is%20required");
+  }
+
+  if (!name) {
+    redirect("/dashboard?tab=more&message=Location%20name%20is%20required");
+  }
+
+  const { data: room, error: roomError } = await supabase
+    .from("rooms")
+    .select("id, property_id, properties!inner(user_id)")
+    .eq("id", roomId)
+    .eq("properties.user_id", user.id)
+    .single();
+
+  if (roomError || !room) {
+    redirect("/dashboard?tab=more&message=Location%20not%20found");
+  }
+
+  const { error } = await supabase
+    .from("rooms")
+    .update({
+      name,
+      room_type: optionalText(formData.get("room_type")),
+      notes: optionalText(formData.get("notes"))
+    })
+    .eq("id", room.id);
+
+  if (error) {
+    const params = new URLSearchParams({
+      tab: "more",
+      property: room.property_id,
+      message: `Could not update location: ${error.message}`
+    });
+    redirect(`/dashboard?${params.toString()}`);
+  }
+
+  redirect(`/dashboard?tab=more&property=${room.property_id}&message=Location%20saved`);
+}
+
+export async function deleteRoom(formData: FormData) {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const roomId = optionalText(formData.get("room_id"));
+
+  if (!roomId) {
+    redirect("/dashboard?tab=more&message=Location%20is%20required");
+  }
+
+  const { data: room, error: roomError } = await supabase
+    .from("rooms")
+    .select("id, property_id, properties!inner(user_id)")
+    .eq("id", roomId)
+    .eq("properties.user_id", user.id)
+    .single();
+
+  if (roomError || !room) {
+    redirect("/dashboard?tab=more&message=Location%20not%20found");
+  }
+
+  const { error } = await supabase.from("rooms").delete().eq("id", room.id);
+
+  if (error) {
+    const params = new URLSearchParams({
+      tab: "more",
+      property: room.property_id,
+      message: `Could not remove location: ${error.message}`
+    });
+    redirect(`/dashboard?${params.toString()}`);
+  }
+
+  redirect(`/dashboard?tab=more&property=${room.property_id}&message=Location%20removed`);
 }
 
 export async function createSelectedAssets(formData: FormData) {
@@ -522,20 +661,28 @@ export async function updateAssetDetails(formData: FormData) {
   const expectedLifespanYears = optionalPositiveInteger(formData.get("expected_lifespan_years"));
   const estimatedReplacementCost = optionalNonNegativeNumber(formData.get("estimated_replacement_cost"));
   const ownershipResponsibility = parseOwnershipResponsibility(formData.get("ownership_responsibility"));
+  const roomId = parseOptionalUuid(formData.get("room_id"));
   const notes = optionalText(formData.get("notes"));
-  const status = calculateAssetStatus({
-    condition,
-    estimatedAgeRange,
-    estimatedReplacementCost,
-    expectedLifespanYears,
-    identificationDetails: [brand, model, serialNumber].filter((detail): detail is string => Boolean(detail)),
-    installYear,
-    lastServiceDate,
-    maintenanceIntervalUnit,
-    maintenanceIntervalValue,
-    nextServiceDueDate,
-    notes
-  });
+  const status = calculateAssetStatus(
+    {
+      condition,
+      nextServiceDueDate
+    },
+    getPilotCalendarDate(new Date())
+  );
+
+  if (roomId) {
+    const { data: room, error: roomError } = await supabase
+      .from("rooms")
+      .select("id")
+      .eq("id", roomId)
+      .eq("property_id", asset.property_id)
+      .single();
+
+    if (roomError || !room) {
+      redirect(`/dashboard?tab=systems&asset=${asset.id}&message=Location%20not%20found`);
+    }
+  }
 
   const { error } = await supabase
     .from("asset_systems")
@@ -553,6 +700,7 @@ export async function updateAssetDetails(formData: FormData) {
       expected_lifespan_years: expectedLifespanYears,
       estimated_replacement_cost: estimatedReplacementCost,
       ownership_responsibility: ownershipResponsibility,
+      room_id: roomId,
       notes,
       status
     })
@@ -565,7 +713,7 @@ export async function updateAssetDetails(formData: FormData) {
     redirect(`/dashboard?${params.toString()}`);
   }
 
-  redirect("/dashboard?message=Asset%20details%20saved");
+  redirect(`/dashboard?tab=systems&asset=${asset.id}&message=Asset%20details%20saved`);
 }
 
 export async function deleteAsset(formData: FormData) {
@@ -603,4 +751,200 @@ export async function deleteAsset(formData: FormData) {
   }
 
   redirect("/dashboard?message=Asset%20removed");
+}
+
+export async function createWorkRecord(formData: FormData) {
+  const user = await requireUser();
+  const propertyId = optionalText(formData.get("property_id"));
+
+  if (!propertyId) {
+    redirect("/dashboard?tab=maintenance&message=Property%20is%20required");
+  }
+
+  const { property, supabase } = await requireOwnedProperty(propertyId, user.id);
+  const rawAssetSystemId = optionalText(formData.get("asset_system_id"));
+  const rawRoomId = optionalText(formData.get("room_id"));
+  const assetSystemId = parseOptionalUuid(formData.get("asset_system_id"));
+  const roomId = parseOptionalUuid(formData.get("room_id"));
+
+  if (rawAssetSystemId && !assetSystemId) {
+    maintenanceRedirect(property.id, "Choose a valid asset");
+  }
+
+  if (rawRoomId && !roomId) {
+    maintenanceRedirect(property.id, "Choose a valid location");
+  }
+
+  const validation = parseWorkRecordFields(
+    {
+      completedDate: formData.get("completed_date"),
+      costAmount: formData.get("cost_amount"),
+      description: formData.get("description"),
+      notes: formData.get("notes"),
+      performedByType: formData.get("performed_by_type"),
+      providerName: formData.get("provider_name"),
+      title: formData.get("title"),
+      workType: formData.get("work_type")
+    },
+    getPilotCalendarDate(new Date())
+  );
+
+  if (!validation.ok) {
+    maintenanceRedirect(property.id, validation.message, { mode: "new" });
+  }
+
+  const linkError = await validateWorkRecordLinks(
+    supabase,
+    property.id,
+    assetSystemId,
+    roomId
+  );
+
+  if (linkError) {
+    maintenanceRedirect(property.id, linkError, { mode: "new" });
+  }
+
+  const { value } = validation;
+  const { error } = await supabase.from("work_records").insert({
+    asset_system_id: assetSystemId,
+    completed_date: value.completedDate,
+    cost_amount: value.costAmount,
+    cost_currency: "USD",
+    description: value.description,
+    notes: value.notes,
+    performed_by_type: value.performedByType,
+    property_id: property.id,
+    provider_name: value.providerName,
+    room_id: roomId,
+    title: value.title,
+    work_type: value.workType
+  });
+
+  if (error) {
+    maintenanceRedirect(
+      property.id,
+      "Could not save the maintenance record. Please try again.",
+      { mode: "new" }
+    );
+  }
+
+  maintenanceRedirect(property.id, "Maintenance record added");
+}
+
+export async function updateWorkRecord(formData: FormData) {
+  const user = await requireUser();
+  const recordId = parseOptionalUuid(formData.get("record_id"));
+
+  if (!recordId) {
+    redirect("/dashboard?tab=maintenance&message=Maintenance%20record%20is%20required");
+  }
+
+  const { record, supabase } = await requireOwnedWorkRecord(recordId, user.id);
+  const rawAssetSystemId = optionalText(formData.get("asset_system_id"));
+  const rawRoomId = optionalText(formData.get("room_id"));
+  const assetSystemId = parseOptionalUuid(formData.get("asset_system_id"));
+  const roomId = parseOptionalUuid(formData.get("room_id"));
+  const editParams = { record: record.id };
+
+  if (rawAssetSystemId && !assetSystemId) {
+    maintenanceRedirect(record.property_id, "Choose a valid asset", editParams);
+  }
+
+  if (rawRoomId && !roomId) {
+    maintenanceRedirect(record.property_id, "Choose a valid location", editParams);
+  }
+
+  const validation = parseWorkRecordFields(
+    {
+      completedDate: formData.get("completed_date"),
+      costAmount: formData.get("cost_amount"),
+      description: formData.get("description"),
+      notes: formData.get("notes"),
+      performedByType: formData.get("performed_by_type"),
+      providerName: formData.get("provider_name"),
+      title: formData.get("title"),
+      workType: formData.get("work_type")
+    },
+    getPilotCalendarDate(new Date())
+  );
+
+  if (!validation.ok) {
+    maintenanceRedirect(record.property_id, validation.message, editParams);
+  }
+
+  const linkError = await validateWorkRecordLinks(
+    supabase,
+    record.property_id,
+    assetSystemId,
+    roomId
+  );
+
+  if (linkError) {
+    maintenanceRedirect(record.property_id, linkError, editParams);
+  }
+
+  const { value } = validation;
+  const { error } = await supabase
+    .from("work_records")
+    .update({
+      asset_system_id: assetSystemId,
+      completed_date: value.completedDate,
+      cost_amount: value.costAmount,
+      cost_currency: "USD",
+      description: value.description,
+      notes: value.notes,
+      performed_by_type: value.performedByType,
+      provider_name: value.providerName,
+      room_id: roomId,
+      title: value.title,
+      work_type: value.workType
+    })
+    .eq("id", record.id)
+    .eq("property_id", record.property_id);
+
+  if (error) {
+    maintenanceRedirect(
+      record.property_id,
+      "Could not update the maintenance record. Please try again.",
+      editParams
+    );
+  }
+
+  maintenanceRedirect(record.property_id, "Maintenance record updated");
+}
+
+export async function deleteWorkRecord(formData: FormData) {
+  const user = await requireUser();
+  const recordId = parseOptionalUuid(formData.get("record_id"));
+  const confirmed = optionalText(formData.get("confirm_delete")) === "REMOVE";
+
+  if (!recordId) {
+    redirect("/dashboard?tab=maintenance&message=Maintenance%20record%20is%20required");
+  }
+
+  const { record, supabase } = await requireOwnedWorkRecord(recordId, user.id);
+
+  if (!confirmed) {
+    maintenanceRedirect(
+      record.property_id,
+      "Type REMOVE before deleting a maintenance record",
+      { record: record.id }
+    );
+  }
+
+  const { error } = await supabase
+    .from("work_records")
+    .delete()
+    .eq("id", record.id)
+    .eq("property_id", record.property_id);
+
+  if (error) {
+    maintenanceRedirect(
+      record.property_id,
+      "Could not delete the maintenance record. Please try again.",
+      { record: record.id }
+    );
+  }
+
+  maintenanceRedirect(record.property_id, "Maintenance record removed");
 }
