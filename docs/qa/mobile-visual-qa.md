@@ -6,6 +6,12 @@ Scope: authenticated mobile visual QA for the Home, Add, Systems, and Asset Deta
 
 Update on 2026-06-11: the selected-item Add review step was implemented, and mobile screenshot QA was attempted at 390 x 844. The screenshot run could not complete because throwaway sign-up now requires Supabase email confirmation and the documented historical test accounts did not accept the available QA password convention. `npm run lint`, `npm run build`, and `npm run verify:supabase` passed. Re-run authenticated screenshot QA after confirming a usable test account or disabling confirmation for local pilot QA.
 
+Resolution on 2026-07-28: a permanent confirmed automation account now powers
+authenticated Playwright coverage without creating throwaway users. The Care Ledger
+mobile scenario passes at 390 x 844 with no horizontal overflow, console errors, or
+page errors. The screenshot archive below remains historical evidence for the earlier
+Home, Add, Systems, and Service Passport passes.
+
 Viewport used: 390 x 844, touch/mobile context.
 
 Screenshots:

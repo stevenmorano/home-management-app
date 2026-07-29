@@ -12,9 +12,11 @@ Follow-up migrations:
 
 ```text
 supabase/migrations/202606040002_dedupe_asset_systems.sql
+supabase/migrations/202607280001_work_records.sql
 ```
 
-The follow-up migration removes duplicate asset/system rows per property and adds a unique index on property, category, and normalized name.
+The follow-up migrations enforce unique normalized asset names and add private,
+property-scoped work history with validation, indexes, and service-date synchronization.
 
 After applying the migration and filling `.env.local`, run:
 
@@ -28,13 +30,17 @@ Current verification status:
 - `properties` reachable.
 - `rooms` reachable.
 - `asset_systems` reachable.
+- `work_records` reachable.
 - Test property creation through RLS succeeded.
 - Test asset-system creation through RLS succeeded.
 - Test asset-system detail update through RLS succeeded.
 - Custom asset-system creation uses the same property ownership check before insert.
 - Asset-system removal uses an ownership-checked asset lookup before delete.
+- Room/location creation, editing, and removal use ownership checks through the parent property.
+- Asset-system location assignment validates that the selected room belongs to the same owned property.
 - Duplicate asset/system creation is prevented in app code and should also be enforced by the follow-up unique index migration.
 - Duplicate asset/system insertion was tested and blocked by constraint error `23505`.
+- Authenticated work-record create, edit, delete, cross-property rejection, asset service-date synchronization, and fixture cleanup passed.
 
 ## Implemented Tables
 
@@ -90,7 +96,7 @@ Key columns:
 - `created_at`
 - `updated_at`
 
-Rooms are not yet exposed in the UI.
+Rooms are exposed in the dashboard More tab as lightweight locations. Users can quick-add common locations such as Kitchen, Basement, Garage, Exterior, Laundry, and Bedroom, add custom locations, edit location details, and remove locations. Removing a room leaves linked assets in place with `room_id` set to null through the existing foreign key behavior.
 
 ### `asset_systems`
 
@@ -124,23 +130,54 @@ Key columns:
 
 Asset dashboard rows now read from `asset_systems`. The current UI creates starter records from the guided add flow, supports custom/repeatable asset creation, and uses Missing Info defaults for incomplete details.
 The dashboard can update detail fields directly on `asset_systems`: `brand`, `model`, `serial_number`, `install_year`, `estimated_age_range`, `condition`, `last_service_date`, `maintenance_interval_value`, `maintenance_interval_unit`, `next_service_due_date`, `expected_lifespan_years`, `estimated_replacement_cost`, `ownership_responsibility`, `notes`, and `status`.
+The dashboard can also assign an asset/system to an optional `room_id`; the app validates the room through the same property ownership boundary before saving.
 The dashboard can remove asset rows after typed `REMOVE` confirmation. Deletes remain protected by the `asset_systems` RLS policy and an app-level ownership check through the parent property.
 
-Status calculation:
+Health and status calculation:
 
-- Empty records with no useful details remain `missing_info`. Default ownership responsibility alone does not count as a useful detail.
-- Brand, model, serial number, expected lifespan, estimated replacement cost, age, service, interval, due-date, condition, and notes can move an asset out of `missing_info`.
-- `condition = poor` marks an asset `needs_attention`.
-- A past `next_service_due_date` marks an asset `needs_attention`.
-- A `next_service_due_date` within 30 days marks an asset `due_soon`.
-- `condition = fair` marks an asset `due_soon`.
-- Otherwise, assets with useful details are `good`.
+- A shared TypeScript domain module calculates status for dashboard reads and asset-detail writes.
+- An asset is assessable only when it has a known condition or a valid explicit `next_service_due_date`.
+- Brand, model, serial number, age, cost, notes, maintenance interval, and `last_service_date` make the record more useful but do not establish current health.
+- `condition = poor` or a past `next_service_due_date` marks an asset `needs_attention`.
+- `condition = fair` or a `next_service_due_date` from today through 30 days marks an asset `due_soon`.
+- `condition = good`/`excellent` or a `next_service_due_date` more than 30 days away marks an asset `good`.
+- Otherwise, the asset remains `missing_info`.
+- The database `status` value is a compatibility snapshot updated on detail writes. The dashboard recalculates status on each request so date-based presentation does not depend on a stale snapshot.
+- Home health excludes `missing_info` assets from the numeric score, displays assessed-system coverage separately, and shows no numeric score when nothing is assessable.
 
 Duplicate guard:
 
 - App-side creation checks existing property assets before insert.
 - Dashboard cards collapse duplicate rows defensively and show a small duplicate-hidden badge.
 - Database-level uniqueness is enforced by `asset_systems_property_category_name_unique_idx` after the follow-up migration is applied.
+
+### `work_records`
+
+Purpose: completed maintenance, repairs, inspections, upgrades, replacements, and
+other work performed on a property.
+
+Key columns:
+
+- `id`
+- `property_id`
+- `asset_system_id`
+- `room_id`
+- `performed_by_type`
+- `provider_name`
+- `title`
+- `work_type`
+- `description`
+- `completed_date`
+- `cost_amount`
+- `cost_currency`
+- `notes`
+- `created_at`
+- `updated_at`
+
+The Care Ledger supports create, view, edit, and typed-confirmation delete. Home shows
+the latest completed work, and Service Passports show records linked to their asset.
+A database trigger advances `asset_systems.last_service_date` only when a linked work
+record has a newer completion date. Cross-property asset and room links are rejected.
 
 ## Enums
 
@@ -153,6 +190,8 @@ The migration creates enums for:
 - `asset_status`
 - `maintenance_interval_unit`
 - `ownership_responsibility`
+- `work_type`
+- `performed_by_type`
 
 These match the MVP data model where possible and keep important dashboard/reminder fields structured.
 
@@ -166,6 +205,7 @@ Ownership rules:
 - `properties`: users can read, create, update, and delete only rows where `user_id = auth.uid()`.
 - `rooms`: users can access rooms only through a property they own.
 - `asset_systems`: users can access assets only through a property they own.
+- `work_records`: users can access history only through a property they own.
 
 Do not disable RLS for app convenience. If a query fails, fix the policy or ownership column rather than bypassing the privacy boundary.
 

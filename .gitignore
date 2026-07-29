@@ -3,6 +3,10 @@ node_modules/
 out/
 build/
 dist/
+coverage/
+playwright/.auth/
+playwright-report/
+test-results/
 
 .env
 .env*.local

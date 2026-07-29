@@ -39,15 +39,15 @@
 - Asset rows. Data-backed visual system rows implemented with icon tiles, last service, next check, status, and links to focused detail views.
 - Upcoming maintenance. Data-backed from due-soon/needs-attention asset status.
 - Overdue items.
-- Recently completed work.
+- Recently completed work. Implemented from RLS-backed work records.
 - Premium mobile/tablet layout. Authenticated mobile screenshot QA, first polish pass, Add picker screenshot QA, compact Add picker QA, Asset Detail passport QA, and selected-item Add review UX are complete.
 
 ## Phase 4: Work History And Contractors
 
-- Work record creation.
+- Work record creation. Complete with property-wide Care Ledger CRUD.
 - Contractor records.
-- Link work to assets, rooms, properties, and contractors.
-- Basic home history timeline.
+- Link work to assets, rooms, properties, and contractors. Property, asset, and room links complete; reusable contractor links pending.
+- Basic home history timeline. First recent-history ledger implemented.
 
 ## Phase 5: Reminders And Google Calendar
 

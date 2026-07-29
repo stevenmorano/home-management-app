@@ -35,7 +35,8 @@ Project scaffold and authentication foundation are complete for the first protec
 - Inline asset detail editing now also supports maintenance interval value, maintenance interval unit, and next service due date.
 - Inline asset detail editing now supports brand, model, serial number, expected lifespan, estimated replacement cost, and ownership responsibility.
 - Asset removal is implemented with explicit typed confirmation.
-- Dashboard status calculation now considers useful details, condition, next service due date, and due-soon timing while keeping empty records as Missing Info.
+- Dashboard status calculation now uses one deterministic domain module. Known condition or an explicit next service due date establishes health; other record details remain Missing Info for health purposes.
+- Home health now scores only assessable systems, shows assessed-system coverage separately, and displays no numeric score when health evidence is unavailable.
 - The earlier Quiet Ledger dashboard direction was replaced after visual review because it felt too old-school and muted.
 - The first HomeKeep Modern Care UI pass is implemented: bright modern app palette, HomeKeep-style header, home health score card, upcoming maintenance list, quick actions, visual home-system rows, asset detail editing, and typed delete confirmation.
 - Checklist appliance suggestions now create individual appliance records instead of one generic Major appliances record.
@@ -59,8 +60,12 @@ Project scaffold and authentication foundation are complete for the first protec
 - Follow-up authenticated mobile visual QA confirms no bottom-nav overlap and no horizontal overflow for Home, Add, Systems, and Asset Detail.
 - Add picker visual QA confirms no bottom-nav overlap and no horizontal overflow for the compact multi-select picker, default picker, and selected Refrigerator naming panel.
 - Asset detail passport visual QA confirms no bottom-nav overlap and no horizontal overflow for the selected asset detail screen.
+- RLS-backed work records are implemented with full CRUD, optional asset/location links, performer/provider context, cost, and notes.
+- Home shows recently completed work, and Service Passports show linked service history.
+- Linked work records advance asset last-service dates forward without changing next-due dates.
+- Authenticated maintenance coverage verifies UI CRUD, cross-property rejection, service-date synchronization, mobile overflow, and cleanup.
 
-The selected-item review wizard is implemented. The next core implementation milestone is likely rooms/locations so assets can be organized by Kitchen, Basement, Garage, Exterior, Laundry, and similar household places.
+The selected-item review wizard is implemented. The first rooms/locations slice is implemented: users can manage lightweight locations from More, assign an asset/system to a location from asset detail, and see assigned location context on Systems rows and asset detail. A later polish pass can add stronger location grouping and starter-name-to-location suggestions.
 
 ## Build Order
 
@@ -70,16 +75,17 @@ The selected-item review wizard is implemented. The next core implementation mil
 4. Property creation and switching. First-property creation, adding another property from More, URL-scoped multi-property switching, and active-property detail editing are complete.
 5. Property type onboarding.
 6. Guided asset/system starter flow. Complete for initial creation and repeatable named additions.
-7. Asset/system CRUD. Create from starter cards, custom asset creation, focused detail editing, and removal are complete; detail UX polish is in progress.
-8. Dashboard status calculation. Data-backed status counts now consider condition and due dates; status explanation/polish pending.
-9. Home health dashboard UI. HomeKeep Modern Care, HomeCare Glass, mobile-first tab shell, compact multi-select Add picker, selected-item review wizard, focused Service Passport asset detail, authenticated mobile screenshot QA, and first mobile QA polish are complete.
-10. Work records.
-11. Contractors.
-12. Reminders.
-13. Google Calendar sync.
-14. Optional document/photo uploads.
-15. Export/backup consideration.
-16. Pilot polish and testing.
+7. Asset/system CRUD. Create from starter cards, custom asset creation, focused detail editing, room/location assignment, and removal are complete; detail UX polish is in progress.
+8. Rooms/locations. First pass complete for CRUD, asset assignment, and display context.
+9. Dashboard status calculation. Shared deterministic status, explanation, health scoring, date-boundary tests, and assessed-system coverage are complete; the stored database status remains a compatibility snapshot.
+10. Home health dashboard UI. HomeKeep Modern Care, HomeCare Glass, mobile-first tab shell, compact multi-select Add picker, selected-item review wizard, focused Service Passport asset detail, authenticated mobile screenshot QA, and first mobile QA polish are complete.
+11. Work records. Complete for the Care Ledger foundation and linked Service Passport history.
+12. Contractors.
+13. Reminders.
+14. Google Calendar sync.
+15. Optional document/photo uploads.
+16. Export/backup consideration.
+17. Pilot polish and testing.
 
 ## Early Technical Priorities
 

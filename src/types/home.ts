@@ -1,4 +1,6 @@
-export type AssetStatus = "good" | "due_soon" | "needs_attention" | "missing_info";
+import type { AssetHealthStatus } from "@/lib/asset-health";
+
+export type AssetStatus = AssetHealthStatus;
 
 export type PropertyType =
   | "single_family_house"

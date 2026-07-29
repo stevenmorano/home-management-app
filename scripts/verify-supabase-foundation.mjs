@@ -56,7 +56,7 @@ async function main() {
     }
   });
 
-  const tables = ["profiles", "properties", "rooms", "asset_systems"];
+  const tables = ["profiles", "properties", "rooms", "asset_systems", "work_records"];
   const verifiedTables = [];
 
   for (const table of tables) {
@@ -66,7 +66,7 @@ async function main() {
   console.log("Supabase foundation reachable.");
   console.log(`Verified tables: ${verifiedTables.join(", ")}`);
   console.log(
-    "Auth, first-property, asset creation, and asset detail update flows have been verified separately with test users."
+    "Auth, property, asset, health, and work-history flows have been verified separately through authenticated browser coverage."
   );
 }
 

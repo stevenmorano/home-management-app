@@ -12,6 +12,7 @@ import {
   Grid2X2,
   HomeIcon,
   Info,
+  MapPin,
   Menu,
   Plus,
   Search,
@@ -25,21 +26,43 @@ import Link from "next/link";
 import { createElement } from "react";
 
 import {
+  createRoom,
   createCustomAsset,
   createFirstProperty,
   createSelectedAssets,
+  deleteRoom,
   deleteAsset,
   updateAssetDetails,
-  updatePropertyDetails
+  updatePropertyDetails,
+  updateRoom
 } from "@/app/dashboard/actions";
 import { signOut } from "@/app/auth/actions";
 import { DashboardAddFlow } from "@/components/dashboard/add-flow";
+import {
+  AssetWorkHistory,
+  MaintenanceView,
+  RecentWorkSection
+} from "@/components/dashboard/maintenance-view";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  calculateHomeHealth,
+  getAssetHealthExplanation,
+  getPilotCalendarDate,
+  type AssetHealthInput,
+  type HomeHealthResult
+} from "@/lib/asset-health";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { AssetSystemCategory, AssetSystemRow, PropertyRow, PropertyType } from "@/types/database";
+import type {
+  AssetSystemCategory,
+  AssetSystemRow,
+  PropertyRow,
+  PropertyType,
+  RoomRow,
+  WorkRecordRow
+} from "@/types/database";
 import type { AssetStatus, AssetSummary, PropertySummary } from "@/types/home";
 
 export const dynamic = "force-dynamic";
@@ -94,13 +117,15 @@ interface DashboardPageProps {
     asset?: string;
     inventory?: string;
     message?: string;
+    mode?: string;
     property?: string;
+    record?: string;
     starter?: string;
     tab?: string;
   }>;
 }
 
-type DashboardTab = "home" | "systems" | "add" | "more";
+type DashboardTab = "home" | "systems" | "add" | "maintenance" | "more";
 type AssetStarterOption = {
   category: AssetSystemCategory;
   description: string;
@@ -128,6 +153,15 @@ const propertyTypeOptions: Array<{ value: PropertyType; label: string }> = [
   { value: "rental", label: "Rental" },
   { value: "vacation_home", label: "Vacation home" },
   { value: "other", label: "Other" }
+];
+
+const commonRoomOptions = [
+  { name: "Kitchen", roomType: "kitchen" },
+  { name: "Basement", roomType: "basement" },
+  { name: "Garage", roomType: "garage" },
+  { name: "Exterior", roomType: "exterior" },
+  { name: "Laundry", roomType: "laundry" },
+  { name: "Bedroom", roomType: "bedroom" }
 ];
 
 const commonAssetOptions: Record<PropertyType, AssetStarterOption[]> = {
@@ -390,7 +424,12 @@ function getDashboardTab(searchParams?: { inventory?: string; tab?: string }, as
     return "add";
   }
 
-  if (searchParams?.tab === "systems" || searchParams?.tab === "add" || searchParams?.tab === "more") {
+  if (
+    searchParams?.tab === "systems" ||
+    searchParams?.tab === "add" ||
+    searchParams?.tab === "maintenance" ||
+    searchParams?.tab === "more"
+  ) {
     return searchParams.tab;
   }
 
@@ -448,130 +487,35 @@ function getAssetDetail(asset: AssetSystemRow) {
   return "Key details still missing";
 }
 
-function daysUntil(dateText: string) {
-  const today = new Date();
-  const dueDate = new Date(`${dateText}T00:00:00`);
-  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  return Math.ceil((dueDate.getTime() - todayStart.getTime()) / 86_400_000);
+function toAssetHealthInput(asset: AssetSystemRow): AssetHealthInput {
+  return {
+    condition: asset.condition,
+    nextServiceDueDate: asset.next_service_due_date
+  };
 }
 
-function getCalculatedAssetStatus(asset: AssetSystemRow): AssetStatus {
-  const hasUsefulDetails = Boolean(
-    asset.install_year ||
-      asset.last_service_date ||
-      asset.next_service_due_date ||
-      asset.notes ||
-      asset.brand ||
-      asset.model ||
-      asset.serial_number ||
-      asset.expected_lifespan_years ||
-      asset.estimated_replacement_cost !== null ||
-      asset.maintenance_interval_value ||
-      asset.maintenance_interval_unit ||
-      (asset.estimated_age_range && asset.estimated_age_range !== "unknown") ||
-      asset.condition !== "unknown"
-  );
-
-  if (!hasUsefulDetails) {
-    return "missing_info";
-  }
-
-  if (asset.condition === "poor") {
-    return "needs_attention";
-  }
-
-  if (asset.next_service_due_date) {
-    const dueInDays = daysUntil(asset.next_service_due_date);
-
-    if (dueInDays < 0) {
-      return "needs_attention";
-    }
-
-    if (dueInDays <= 30) {
-      return "due_soon";
-    }
-  }
-
-  if (asset.condition === "fair") {
-    return "due_soon";
-  }
-
-  return "good";
-}
-
-function getAssetNextAction(asset: AssetSystemRow, status: AssetStatus) {
-  if (asset.next_service_due_date) {
-    const dueInDays = daysUntil(asset.next_service_due_date);
-
-    if (dueInDays < 0) {
-      return `Service was due ${asset.next_service_due_date}`;
-    }
-
-    if (dueInDays <= 30) {
-      return `Service due ${asset.next_service_due_date}`;
-    }
-
-    return `Next service due ${asset.next_service_due_date}`;
-  }
-
-  if (status === "missing_info") {
-    return "Add age, service date, condition, or notes";
-  }
-
-  if (status === "needs_attention") {
-    return "Review and plan next action";
-  }
-
-  if (status === "due_soon") {
-    return "Schedule upcoming maintenance";
-  }
-
-  return "No urgent action";
-}
-
-function getAssetStatusReason(asset: AssetSystemRow, status: AssetStatus) {
-  if (status === "missing_info") {
-    return "Add one or two details to make this record useful.";
-  }
-
-  if (asset.condition === "poor") {
-    return "Condition is marked poor.";
-  }
-
-  if (asset.next_service_due_date) {
-    const dueInDays = daysUntil(asset.next_service_due_date);
-
-    if (dueInDays < 0) {
-      return `Service is overdue by ${Math.abs(dueInDays)} day${Math.abs(dueInDays) === 1 ? "" : "s"}.`;
-    }
-
-    if (dueInDays <= 30) {
-      return `Service is due in ${dueInDays} day${dueInDays === 1 ? "" : "s"}.`;
-    }
-  }
-
-  if (asset.condition === "fair") {
-    return "Condition is fair, so it should stay on the radar.";
-  }
-
-  return "Details are recorded and no urgent service is due.";
-}
-
-function toAssetSummary(asset: AssetSystemRow): AssetSummary {
-  const status = getCalculatedAssetStatus(asset);
+function toAssetSummary(asset: AssetSystemRow, today: string): AssetSummary {
+  const health = getAssetHealthExplanation(toAssetHealthInput(asset), today);
 
   return {
     name: asset.name,
     category: formatAssetCategory(asset.category),
-    status,
+    status: health.status,
     detail: getAssetDetail(asset),
-    nextAction: getAssetNextAction(asset, status),
-    statusReason: getAssetStatusReason(asset, status)
+    nextAction: health.nextAction,
+    statusReason: health.statusReason
   };
 }
 
-function toUniqueAssets(assetRows: AssetSystemRow[]) {
+function getRoomMap(rooms: RoomRow[]) {
+  return new Map(rooms.map((room) => [room.id, room]));
+}
+
+function getAssetLocationName(asset: AssetSystemRow, roomMap: Map<string, RoomRow>) {
+  return asset.room_id ? roomMap.get(asset.room_id)?.name ?? null : null;
+}
+
+function toUniqueAssets(assetRows: AssetSystemRow[], today: string) {
   const groupedAssets = new Map<string, { asset: AssetSystemRow; duplicateCount: number }>();
 
   for (const asset of assetRows) {
@@ -592,43 +536,11 @@ function toUniqueAssets(assetRows: AssetSystemRow[]) {
   return Array.from(groupedAssets.values()).map(({ asset, duplicateCount }) => ({
     asset,
     summary: {
-      ...toAssetSummary(asset),
+      ...toAssetSummary(asset, today),
       duplicateCount
     },
     duplicateCount
   }));
-}
-
-function getStatusCounts(assetSummaries: AssetSummary[]) {
-  return assetSummaries.reduce(
-    (counts, asset) => {
-      counts[asset.status] += 1;
-      return counts;
-    },
-    {
-      good: 0,
-      due_soon: 0,
-      needs_attention: 0,
-      missing_info: 0
-    } satisfies Record<AssetStatus, number>
-  );
-}
-
-function getHomeHealthScore(statusCounts: Record<AssetStatus, number>) {
-  const total =
-    statusCounts.good + statusCounts.due_soon + statusCounts.needs_attention + statusCounts.missing_info;
-
-  if (total === 0) {
-    return 0;
-  }
-
-  const weighted =
-    statusCounts.good * 100 +
-    statusCounts.due_soon * 72 +
-    statusCounts.missing_info * 58 +
-    statusCounts.needs_attention * 32;
-
-  return Math.round(weighted / total);
 }
 
 function getUserFirstName(email: string) {
@@ -659,6 +571,28 @@ async function getAssetSystems(propertyId: string) {
     .select("*")
     .eq("property_id", propertyId)
     .order("created_at", { ascending: true });
+}
+
+async function getRooms(propertyId: string) {
+  const supabase = await createClient();
+
+  return supabase
+    .from("rooms")
+    .select("*")
+    .eq("property_id", propertyId)
+    .order("created_at", { ascending: true });
+}
+
+async function getWorkRecords(propertyId: string) {
+  const supabase = await createClient();
+
+  return supabase
+    .from("work_records")
+    .select("*")
+    .eq("property_id", propertyId)
+    .order("completed_date", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(25);
 }
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
@@ -702,6 +636,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     properties.find((propertyOption) => propertyOption.id === resolvedSearchParams?.property) ?? properties[0];
   const property = toPropertySummary(activeProperty);
   const { data: assetRows, error: assetError } = await getAssetSystems(activeProperty.id);
+  const { data: rooms, error: roomsError } = await getRooms(activeProperty.id);
+  const { data: workRecords, error: workRecordsError } = await getWorkRecords(activeProperty.id);
 
   if (assetError) {
     return (
@@ -729,13 +665,78 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     );
   }
 
-  const uniqueAssets = toUniqueAssets(assetRows ?? []);
-  const assetSummaries = uniqueAssets.map(({ summary }) => summary);
-  const statusCounts = getStatusCounts(assetSummaries);
-  const healthScore = getHomeHealthScore(statusCounts);
+  if (roomsError) {
+    return (
+      <DashboardShell
+        activePropertyId={activeProperty.id}
+        properties={properties}
+        propertyName={property.name}
+        propertyMeta={`${formatPropertyType(property.propertyType)} - ${property.location}`}
+        userEmail={user.email ?? "Signed in"}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Location Data Unavailable</CardTitle>
+            <CardDescription>
+              The property loaded, but rooms/locations could not be read.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="rounded-md border border-[var(--ledger-line)] bg-white/60 p-3 text-sm text-[var(--foreground)]">
+              {roomsError.message}
+            </p>
+          </CardContent>
+        </Card>
+      </DashboardShell>
+    );
+  }
+
+  if (workRecordsError) {
+    return (
+      <DashboardShell
+        activePropertyId={activeProperty.id}
+        properties={properties}
+        propertyName={property.name}
+        propertyMeta={`${formatPropertyType(property.propertyType)} - ${property.location}`}
+        userEmail={user.email ?? "Signed in"}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Work History Schema Needed</CardTitle>
+            <CardDescription>
+              The property loaded, but maintenance records are not available yet.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-[var(--ink-soft)]">
+            <p>
+              Apply `supabase/migrations/202607280001_work_records.sql` to the Supabase
+              project, then refresh this page.
+            </p>
+          </CardContent>
+        </Card>
+      </DashboardShell>
+    );
+  }
+
+  const today = getPilotCalendarDate(new Date());
+  const uniqueAssets = toUniqueAssets(assetRows ?? [], today);
+  const roomMap = getRoomMap(rooms ?? []);
+  const homeHealth = calculateHomeHealth(
+    uniqueAssets.map(({ asset }) => toAssetHealthInput(asset)),
+    today
+  );
+  const statusCounts = homeHealth.statusCounts;
   const userFirstName = getUserFirstName(user.email ?? "there");
   const activeTab = getDashboardTab(resolvedSearchParams, uniqueAssets.length);
   const selectedAsset = uniqueAssets.find(({ asset }) => asset.id === resolvedSearchParams?.asset);
+  const selectedWorkRecord = (workRecords ?? []).find(
+    (record) => record.id === resolvedSearchParams?.record
+  );
+  const defaultMaintenanceAssetId = uniqueAssets.some(
+    ({ asset }) => asset.id === resolvedSearchParams?.asset
+  )
+    ? resolvedSearchParams?.asset
+    : undefined;
 
   return (
     <DashboardShell
@@ -756,26 +757,49 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       {activeTab === "home" ? (
         <DashboardHomeView
           assets={uniqueAssets}
-          healthScore={healthScore}
+          homeHealth={homeHealth}
           property={property}
           propertyId={activeProperty.id}
-          statusCounts={statusCounts}
+          rooms={rooms ?? []}
+          roomMap={roomMap}
           userFirstName={userFirstName}
+          workRecords={workRecords ?? []}
         />
       ) : null}
 
       {activeTab === "systems" && selectedAsset ? (
-        <AssetDetailView asset={selectedAsset.asset} propertyId={activeProperty.id} summary={selectedAsset.summary} />
+        <AssetDetailView
+          asset={selectedAsset.asset}
+          propertyId={activeProperty.id}
+          rooms={rooms ?? []}
+          summary={selectedAsset.summary}
+          workRecords={(workRecords ?? []).filter(
+            (record) => record.asset_system_id === selectedAsset.asset.id
+          )}
+        />
       ) : null}
 
       {activeTab === "systems" && !selectedAsset ? (
-        <HomeSystemsPanel assets={uniqueAssets} propertyId={activeProperty.id} />
+        <HomeSystemsPanel assets={uniqueAssets} propertyId={activeProperty.id} roomMap={roomMap} />
       ) : null}
 
       {activeTab === "add" ? (
         <GuidedAssetChecklist
           existingAssets={uniqueAssets.map(({ asset }) => asset)}
           property={activeProperty}
+        />
+      ) : null}
+
+      {activeTab === "maintenance" ? (
+        <MaintenanceView
+          assets={uniqueAssets.map(({ asset }) => asset)}
+          defaultAssetId={defaultMaintenanceAssetId}
+          propertyId={activeProperty.id}
+          propertyName={property.name}
+          records={workRecords ?? []}
+          rooms={rooms ?? []}
+          selectedRecord={selectedWorkRecord}
+          today={today}
         />
       ) : null}
 
@@ -786,6 +810,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           propertyRow={activeProperty}
           property={property}
           propertyType={formatPropertyType(property.propertyType)}
+          rooms={rooms ?? []}
           statusCounts={statusCounts}
           userEmail={user.email ?? "Signed in"}
         />
@@ -796,26 +821,30 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
 function DashboardHomeView({
   assets,
-  healthScore,
+  homeHealth,
   property,
   propertyId,
-  statusCounts,
-  userFirstName
+  rooms,
+  roomMap,
+  userFirstName,
+  workRecords
 }: {
   assets: Array<{ asset: AssetSystemRow; summary: AssetSummary; duplicateCount: number }>;
-  healthScore: number;
+  homeHealth: HomeHealthResult;
   property: PropertySummary;
   propertyId: string;
-  statusCounts: Record<AssetStatus, number>;
+  rooms: RoomRow[];
+  roomMap: Map<string, RoomRow>;
   userFirstName: string;
+  workRecords: WorkRecordRow[];
 }) {
   return (
-    <section className="grid min-w-0 gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+    <section className="grid min-w-0 max-w-full gap-6 overflow-hidden xl:grid-cols-[0.95fr_1.05fr]">
       <div className="min-w-0 flex flex-col gap-4 sm:gap-6">
         <section className="flex flex-col gap-2">
           <p className="text-sm font-medium text-[var(--ink-soft)]">{property.location}</p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
+            <div className="min-w-0">
               <h2 className="text-2xl font-bold tracking-tight text-[var(--foreground)] sm:text-3xl">
                 Good morning, {userFirstName}
               </h2>
@@ -832,54 +861,67 @@ function DashboardHomeView({
           </div>
         </section>
 
-        <HomeHealthCard healthScore={healthScore} statusCounts={statusCounts} />
+        <HomeHealthCard homeHealth={homeHealth} />
 
         <UpcomingMaintenance assets={assets} />
       </div>
 
-      <aside className="flex flex-col gap-4">
+      <aside className="min-w-0 max-w-full overflow-hidden flex flex-col gap-4">
         <QuickActions propertyId={propertyId} />
-        <SystemsPreview assets={assets} propertyId={propertyId} />
+        <RecentWorkSection
+          assets={assets.map(({ asset }) => asset)}
+          propertyId={propertyId}
+          records={workRecords}
+          rooms={rooms}
+        />
+        <SystemsPreview assets={assets} propertyId={propertyId} roomMap={roomMap} />
       </aside>
     </section>
   );
 }
 
 function HomeHealthCard({
-  healthScore,
-  statusCounts
+  homeHealth
 }: {
-  healthScore: number;
-  statusCounts: Record<AssetStatus, number>;
+  homeHealth: HomeHealthResult;
 }) {
+  const { completeness, score: healthScore, statusCounts, summaryText } = homeHealth;
   const scoreColor =
-    healthScore >= 80
+    healthScore === null
+      ? "var(--status-missing)"
+      : healthScore >= 80
       ? "var(--status-good)"
       : healthScore >= 60
         ? "var(--status-warning)"
         : "var(--status-danger)";
-  const summaryText =
-    healthScore === 0
-      ? "Add systems to calculate your home health."
-      : healthScore >= 80
-        ? "Great job. Your home is in good shape."
-        : healthScore >= 60
-          ? "A few systems need attention soon."
-          : "Some systems need attention now.";
+  const scoreBackground =
+    healthScore === null
+      ? "var(--status-missing-soft)"
+      : `conic-gradient(${scoreColor} ${healthScore * 3.6}deg, #dce8f7 0deg)`;
+  const coverageText =
+    completeness.totalCount === 0
+      ? "No systems added yet."
+      : `${completeness.assessedCount} of ${completeness.totalCount} systems assessed (${completeness.percentage}% coverage).`;
 
   return (
     <section className="w-full max-w-full overflow-hidden rounded-3xl border border-white/80 bg-gradient-to-br from-emerald-50 via-white to-blue-50 p-4 shadow-xl shadow-blue-100/70 sm:p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
         <div
-          aria-label={`Home health score ${healthScore} out of 100`}
+          aria-label={
+            healthScore === null
+              ? "Home health score unavailable"
+              : `Home health score ${healthScore} out of 100`
+          }
           className="grid h-28 w-28 shrink-0 place-items-center self-center rounded-full sm:h-36 sm:w-36 sm:self-auto"
           style={{
-            background: `conic-gradient(${scoreColor} ${healthScore * 3.6}deg, #dce8f7 0deg)`
+            background: scoreBackground
           }}
         >
           <div className="grid h-20 w-20 place-items-center rounded-full bg-white shadow-inner sm:h-28 sm:w-28">
             <div className="text-center">
-              <p className="text-3xl font-bold text-[var(--foreground)] sm:text-4xl">{healthScore}</p>
+              <p className="text-3xl font-bold text-[var(--foreground)] sm:text-4xl">
+                {healthScore ?? "—"}
+              </p>
               <p className="-mt-1 text-xs font-semibold text-[var(--ink-soft)]">/100</p>
             </div>
           </div>
@@ -890,7 +932,10 @@ function HomeHealthCard({
             <h3 className="text-lg font-bold text-[var(--foreground)]">Home Health</h3>
           </div>
           <p className="mt-2 text-base font-bold leading-snug text-[var(--foreground)] sm:mt-3 sm:text-xl">{summaryText}</p>
-          <p className="mt-1 max-w-[24rem] text-sm leading-5 text-[var(--ink-soft)] sm:mt-2 sm:leading-6">
+          <p className="mt-1 max-w-[24rem] text-sm font-semibold leading-5 text-[var(--foreground)] sm:mt-2 sm:leading-6">
+            {coverageText}
+          </p>
+          <p className="mt-1 max-w-[24rem] text-sm leading-5 text-[var(--ink-soft)] sm:leading-6">
             {statusCounts.good} good, {statusCounts.due_soon} due soon,{" "}
             {statusCounts.needs_attention} need attention, {statusCounts.missing_info} missing info.
           </p>
@@ -961,14 +1006,18 @@ function QuickActions({ propertyId }: { propertyId: string }) {
   const actions = [
     { label: "Add item", icon: Plus, href: getDashboardHref("add", propertyId) },
     { label: "Note", icon: FileText, href: null },
-    { label: "Maintenance", icon: Wrench, href: null },
+    {
+      label: "Maintenance",
+      icon: Wrench,
+      href: getDashboardHref("maintenance", propertyId, { mode: "new" })
+    },
     { label: "Photo", icon: Camera, href: null }
   ];
 
   return (
-    <section>
+    <section className="min-w-0 max-w-full overflow-hidden">
       <h3 className="text-lg font-bold text-[var(--foreground)]">Quick Add</h3>
-      <div className="mt-3 grid grid-cols-4 gap-2 sm:gap-3">
+      <div className="mt-3 grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
         {actions.map((action) => {
           const Icon = action.icon;
           const content = (
@@ -976,14 +1025,14 @@ function QuickActions({ propertyId }: { propertyId: string }) {
               <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--brand)] text-white">
                 <Icon className="h-5 w-5" aria-hidden="true" />
               </span>
-              {action.label}
+              <span className="max-w-full truncate">{action.label}</span>
             </>
           );
 
           if (action.href) {
             return (
               <Link
-                className="flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border border-[var(--ledger-line)] bg-white p-2 text-xs font-semibold text-[var(--foreground)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] sm:min-h-24 sm:p-3 sm:text-sm"
+                className="min-w-0 flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border border-[var(--ledger-line)] bg-white p-2 text-xs font-semibold text-[var(--foreground)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] sm:min-h-24 sm:p-3 sm:text-sm"
                 href={action.href}
                 key={action.label}
               >
@@ -994,7 +1043,7 @@ function QuickActions({ propertyId }: { propertyId: string }) {
 
           return (
             <button
-              className="flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border border-[var(--ledger-line)] bg-white p-2 text-xs font-semibold text-[var(--foreground)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] sm:min-h-24 sm:p-3 sm:text-sm"
+              className="min-w-0 flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border border-[var(--ledger-line)] bg-white p-2 text-xs font-semibold text-[var(--foreground)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] sm:min-h-24 sm:p-3 sm:text-sm"
               key={action.label}
               type="button"
             >
@@ -1009,21 +1058,23 @@ function QuickActions({ propertyId }: { propertyId: string }) {
 
 function SystemsPreview({
   assets,
-  propertyId
+  propertyId,
+  roomMap
 }: {
   assets: Array<{ asset: AssetSystemRow; summary: AssetSummary; duplicateCount: number }>;
   propertyId: string;
+  roomMap: Map<string, RoomRow>;
 }) {
   const previewAssets = assets.slice(0, 5);
 
   return (
-    <section className="rounded-3xl border border-[var(--ledger-line)] bg-white p-4 shadow-xl shadow-blue-100/60">
+    <section className="min-w-0 max-w-full overflow-hidden rounded-3xl border border-[var(--ledger-line)] bg-white p-4 shadow-xl shadow-blue-100/60">
       <div className="flex items-center justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-[var(--ink-soft)]">Home Systems</p>
-          <h3 className="text-2xl font-bold text-[var(--foreground)]">Your main records</h3>
+          <h3 className="truncate text-2xl font-bold text-[var(--foreground)]">Your main records</h3>
         </div>
-        <Button asChild size="sm" variant="ghost">
+        <Button asChild className="shrink-0" size="sm" variant="ghost">
           <Link href={getDashboardHref("systems", propertyId)}>View all</Link>
         </Button>
       </div>
@@ -1034,10 +1085,11 @@ function SystemsPreview({
             const meta = statusMeta[summary.status];
             const CategoryIcon = getCategoryIcon(asset.category);
             const categoryVisual = getCategoryVisual(asset.category);
+            const location = getAssetLocationName(asset, roomMap);
 
             return (
               <Link
-                className="flex items-center gap-3 rounded-2xl border border-[var(--ledger-line)] bg-gradient-to-r from-white to-[var(--paper-muted)] p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
+                className="min-w-0 flex items-center gap-3 rounded-2xl border border-[var(--ledger-line)] bg-gradient-to-r from-white to-[var(--paper-muted)] p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
                 href={getDashboardHref("systems", propertyId, { asset: asset.id })}
                 key={asset.id}
               >
@@ -1046,7 +1098,9 @@ function SystemsPreview({
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-bold text-[var(--foreground)]">{summary.name}</span>
-                  <span className="mt-0.5 block truncate text-sm text-[var(--ink-soft)]">{summary.nextAction}</span>
+                  <span className="mt-0.5 block truncate text-sm text-[var(--ink-soft)]">
+                    {location ? `${location} - ${summary.nextAction}` : summary.nextAction}
+                  </span>
                 </span>
                 <Badge className="shrink-0" variant={meta.badge}>{meta.label}</Badge>
               </Link>
@@ -1064,10 +1118,12 @@ function SystemsPreview({
 
 function HomeSystemsPanel({
   assets,
-  propertyId
+  propertyId,
+  roomMap
 }: {
   assets: Array<{ asset: AssetSystemRow; summary: AssetSummary; duplicateCount: number }>;
   propertyId: string;
+  roomMap: Map<string, RoomRow>;
 }) {
   return (
     <section className="rounded-3xl border border-[var(--ledger-line)] bg-white p-4 shadow-xl shadow-blue-100/60">
@@ -1093,7 +1149,7 @@ function HomeSystemsPanel({
       </div>
 
       {assets.length > 0 ? (
-        <AssetCards assets={assets} propertyId={propertyId} />
+        <AssetCards assets={assets} propertyId={propertyId} roomMap={roomMap} />
       ) : (
         <div className="mt-4 rounded-2xl border border-dashed border-[var(--ledger-line)] bg-[var(--paper-muted)] p-5 text-sm text-[var(--ink-soft)]">
           Add systems to start building your home dashboard.
@@ -1105,10 +1161,12 @@ function HomeSystemsPanel({
 
 function AssetCards({
   assets,
-  propertyId
+  propertyId,
+  roomMap
 }: {
   assets: Array<{ asset: AssetSystemRow; summary: AssetSummary; duplicateCount: number }>;
   propertyId: string;
+  roomMap: Map<string, RoomRow>;
 }) {
   return (
     <section className="mt-4 space-y-2 sm:space-y-3">
@@ -1119,6 +1177,7 @@ function AssetCards({
         const lastService = getServiceDisplay(asset.last_service_date, "Add service date");
         const nextCheck = getServiceDisplay(asset.next_service_due_date, "Add next check");
         const detailHref = getDashboardHref("systems", propertyId, { asset: asset.id });
+        const location = getAssetLocationName(asset, roomMap);
 
         return (
           <Card className="overflow-hidden rounded-3xl border-white bg-white shadow-lg shadow-blue-100/50 transition hover:-translate-y-0.5 hover:shadow-xl" key={asset.id}>
@@ -1133,7 +1192,9 @@ function AssetCards({
                       <CardTitle className="truncate text-base font-bold sm:text-lg">{summary.name}</CardTitle>
                       <Badge variant={meta.badge}>{meta.label}</Badge>
                     </div>
-                    <CardDescription>{summary.category}</CardDescription>
+                    <CardDescription>
+                      {location ? `${summary.category} - ${location}` : summary.category}
+                    </CardDescription>
                     <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-[var(--ink-soft)]">
                       <div className="rounded-2xl bg-white/80 px-3 py-2">
                         <p className="font-semibold text-[var(--foreground)]">Last service</p>
@@ -1167,19 +1228,23 @@ function AssetCards({
 function AssetDetailView({
   asset,
   propertyId,
-  summary
+  rooms,
+  summary,
+  workRecords
 }: {
   asset: AssetSystemRow;
   propertyId: string;
+  rooms: RoomRow[];
   summary: AssetSummary;
+  workRecords: WorkRecordRow[];
 }) {
   const meta = statusMeta[summary.status];
   const Icon = meta.icon;
   const CategoryIcon = getCategoryIcon(asset.category);
   const lastService = getServiceDisplay(asset.last_service_date, "Add service date");
   const nextCheck = getServiceDisplay(asset.next_service_due_date, "Add next check");
-  const installedText = asset.install_year ? `${asset.install_year}` : "Add install year";
   const conditionText = formatSelectValue(asset.condition);
+  const locationText = getAssetLocationName(asset, getRoomMap(rooms)) ?? "No location set";
   const identityText =
     asset.brand || asset.model
       ? [asset.brand, asset.model].filter(Boolean).join(" ")
@@ -1223,6 +1288,12 @@ function AssetDetailView({
 
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <AssetMetricCard
+                icon={MapPin}
+                isMissing={!asset.room_id}
+                label="Location"
+                value={locationText}
+              />
+              <AssetMetricCard
                 icon={CalendarDays}
                 isMissing={!asset.next_service_due_date}
                 label="Next service"
@@ -1233,12 +1304,6 @@ function AssetDetailView({
                 isMissing={!asset.last_service_date}
                 label="Last service"
                 value={lastService}
-              />
-              <AssetMetricCard
-                icon={Info}
-                isMissing={!asset.install_year}
-                label="Installed"
-                value={installedText}
               />
               <AssetMetricCard
                 icon={Icon}
@@ -1260,6 +1325,11 @@ function AssetDetailView({
               <p className="mt-2 text-sm leading-6">{summary.statusReason}</p>
               <p className="mt-3 rounded-2xl bg-white/70 px-3 py-2 text-sm">{summary.detail}</p>
             </div>
+            <AssetWorkHistory
+              asset={asset}
+              propertyId={propertyId}
+              records={workRecords}
+            />
             <div className="rounded-[1.75rem] bg-white p-4 shadow-sm ring-1 ring-blue-100">
               <p className="text-sm font-black text-[var(--foreground)]">Notes</p>
               <p className="mt-2 text-sm leading-6 text-[var(--ink-soft)]">
@@ -1269,6 +1339,10 @@ function AssetDetailView({
             <div className="rounded-[1.75rem] bg-[var(--paper-muted)] p-4">
               <p className="text-sm font-black text-[var(--foreground)]">Record profile</p>
               <div className="mt-3 grid gap-2 text-sm text-[var(--ink-soft)]">
+                <p className="flex justify-between gap-3">
+                  <span>Location</span>
+                  <span className="font-bold text-[var(--foreground)]">{locationText}</span>
+                </p>
                 <p className="flex justify-between gap-3">
                   <span>Responsibility</span>
                   <span className="font-bold text-[var(--foreground)]">{formatSelectValue(asset.ownership_responsibility)}</span>
@@ -1286,7 +1360,7 @@ function AssetDetailView({
           </aside>
 
           <div className="rounded-[1.75rem] bg-white p-4 shadow-xl shadow-blue-100/60">
-            <AssetDetailForm asset={asset} />
+            <AssetDetailForm asset={asset} rooms={rooms} />
           </div>
         </div>
       </section>
@@ -1320,7 +1394,7 @@ function AssetMetricCard({
   );
 }
 
-function AssetDetailForm({ asset }: { asset: AssetSystemRow }) {
+function AssetDetailForm({ asset, rooms }: { asset: AssetSystemRow; rooms: RoomRow[] }) {
   return (
     <>
       <div className="mb-4 flex flex-col gap-1">
@@ -1359,6 +1433,21 @@ function AssetDetailForm({ asset }: { asset: AssetSystemRow }) {
             name="serial_number"
             placeholder="Optional equipment identifier"
           />
+        </label>
+        <label className="space-y-1 text-sm font-medium sm:col-span-2">
+          Location
+          <select
+            className={fieldClassName}
+            defaultValue={asset.room_id ?? ""}
+            name="room_id"
+          >
+            <option value="">No location yet</option>
+            {rooms.map((room) => (
+              <option key={room.id} value={room.id}>
+                {room.name}
+              </option>
+            ))}
+          </select>
         </label>
         <div className="rounded-2xl bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[var(--brand)] shadow-sm sm:col-span-2">
           Age and maintenance
@@ -1607,6 +1696,7 @@ function MoreView({
   property,
   propertyRow,
   propertyType,
+  rooms,
   statusCounts,
   userEmail
 }: {
@@ -1615,6 +1705,7 @@ function MoreView({
   property: PropertySummary;
   propertyRow: PropertyRow;
   propertyType: string;
+  rooms: RoomRow[];
   statusCounts: Record<AssetStatus, number>;
   userEmail: string;
 }) {
@@ -1664,6 +1755,98 @@ function MoreView({
               Sign out
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-3xl border-white bg-white shadow-xl shadow-blue-100/60">
+        <CardHeader>
+          <CardTitle className="text-2xl font-black">Rooms and locations</CardTitle>
+          <CardDescription>Organize systems by places like Kitchen, Basement, Garage, or Exterior.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {commonRoomOptions.map((option) => {
+              const alreadyExists = rooms.some((room) => room.name.trim().toLowerCase() === option.name.toLowerCase());
+
+              return (
+                <form action={createRoom} key={option.name}>
+                  <input name="property_id" type="hidden" value={propertyRow.id} />
+                  <input name="name" type="hidden" value={option.name} />
+                  <input name="room_type" type="hidden" value={option.roomType} />
+                  <Button className="h-10 w-full rounded-xl" disabled={alreadyExists} type="submit" variant={alreadyExists ? "secondary" : "outline"}>
+                    <MapPin className="h-4 w-4" aria-hidden="true" />
+                    {option.name}
+                  </Button>
+                </form>
+              );
+            })}
+          </div>
+
+          <form action={createRoom} className="grid gap-3 rounded-2xl border border-dashed border-[var(--ledger-line)] bg-[var(--paper-muted)] p-3 sm:grid-cols-2">
+            <input name="property_id" type="hidden" value={propertyRow.id} />
+            <label className="space-y-1 text-sm font-medium">
+              Location name
+              <input className={tallFieldClassName} name="name" placeholder="Mudroom, attic, side yard" />
+            </label>
+            <label className="space-y-1 text-sm font-medium">
+              Type
+              <input className={tallFieldClassName} name="room_type" placeholder="room, exterior, utility" />
+            </label>
+            <label className="space-y-1 text-sm font-medium sm:col-span-2">
+              Notes
+              <textarea className={textareaClassName} name="notes" placeholder="Access notes, labels, or anything helpful." />
+            </label>
+            <div className="sm:col-span-2">
+              <Button className="h-11 w-full rounded-xl bg-[var(--brand)] hover:bg-[var(--brand-strong)]" type="submit">
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                Add location
+              </Button>
+            </div>
+          </form>
+
+          {rooms.length > 0 ? (
+            <div className="space-y-2">
+              {rooms.map((room) => (
+                <details className="rounded-2xl border border-[var(--ledger-line)] bg-white p-3" key={room.id}>
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-[var(--foreground)]">
+                    <span>{room.name}</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--ink-soft)]">Edit</span>
+                  </summary>
+                  <form action={updateRoom} className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <input name="room_id" type="hidden" value={room.id} />
+                    <label className="space-y-1 text-sm font-medium">
+                      Name
+                      <input className={tallFieldClassName} defaultValue={room.name} name="name" required />
+                    </label>
+                    <label className="space-y-1 text-sm font-medium">
+                      Type
+                      <input className={tallFieldClassName} defaultValue={room.room_type ?? ""} name="room_type" />
+                    </label>
+                    <label className="space-y-1 text-sm font-medium sm:col-span-2">
+                      Notes
+                      <textarea className={textareaClassName} defaultValue={room.notes ?? ""} name="notes" />
+                    </label>
+                    <div className="flex flex-wrap gap-2 sm:col-span-2">
+                      <Button className="rounded-xl bg-[var(--brand)] hover:bg-[var(--brand-strong)]" size="sm" type="submit">
+                        Save location
+                      </Button>
+                    </div>
+                  </form>
+                  <form action={deleteRoom} className="mt-2">
+                    <input name="room_id" type="hidden" value={room.id} />
+                    <Button className="text-[var(--status-danger)]" size="sm" type="submit" variant="ghost">
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      Remove location
+                    </Button>
+                  </form>
+                </details>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-[var(--ledger-line)] bg-white p-4 text-sm leading-6 text-[var(--ink-soft)]">
+              Add a few common places, then assign systems from each asset detail screen.
+            </div>
+          )}
         </CardContent>
       </Card>
 
